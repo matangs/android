@@ -4,7 +4,8 @@ import java.util.ArrayList;
 //import com.xpensercpt.mkumar.xpensercpt.Receipt;
 
 /**
- * Created by mkq on 10/9/15.
+ * Created by mkumar on 10/9/15.
+ * Trip class to store data related to a trip and optionally all it's receipts
  */
 public class Trip {
 
@@ -42,6 +43,8 @@ public class Trip {
     public String getDate(){
         return m_date;
     }
+
+    public ArrayList<Receipt> getReceipts(){ return m_receipts; }
 
     // Will be used by the ArrayAdapter in the ListView
     @Override

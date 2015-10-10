@@ -9,7 +9,8 @@ import android.database.sqlite.SQLiteDatabase;
 import java.util.ArrayList;
 
 /**
- * Created by mkq on 10/9/15.
+ * Created by mkumar on 10/9/15.
+ * Data source for Receipts
  */
 public class ReceiptDataSource {
 
@@ -27,9 +28,11 @@ public class ReceiptDataSource {
             Receipt.COLUMN_PHOTO,
             Receipt.COLUMN_COMMENT
     };
+    private Context m_context;
 
     public ReceiptDataSource(Context context) {
         dbHelper = new MySQLiteHelper(context);
+        m_context = context;
     }
 
     public void open() throws SQLException {
@@ -52,38 +55,15 @@ public class ReceiptDataSource {
         if (comment != null)
             values.put(Receipt.COLUMN_COMMENT, comment);
 
-        long insertId = database.insert(Receipt.TABLE_RECEIPTS, null, values);
-        return insertId;
+        return database.insert(Receipt.TABLE_RECEIPTS, null, values);
     }
 
     public void deleteReceipt(Receipt receipt) {
-
-        /*
-
-        delete all photos
-
-        NSArray* arr = [rcpt.m_photo componentsSeparatedByString:@","];
-
-        for (NSString* indexStr in arr)
-        {
-            NSString* photoPath = [rcpt imagePath:indexStr];
-            if ([[NSFileManager defaultManager] fileExistsAtPath:photoPath])
-            {
-                NSError* error;
-                [[NSFileManager defaultManager] removeItemAtPath: photoPath error: &error];
-            }
-        }
-
-        */
-
-        long id = receipt.getPrimaryKey();
-        System.out.println("Receipt deleted with id: " + id);
-        database.delete(Receipt.TABLE_RECEIPTS, Receipt.COLUMN_ID
-                + " = " + id, null);
+        receipt.deleteReceipt(m_context, database);
     }
 
     public ArrayList<Receipt> getAllReceipts(int tripId) {
-        ArrayList<Receipt> rcpts = new ArrayList<Receipt>();
+        ArrayList<Receipt> rcpts = new ArrayList<>();
         Cursor cursor = database.query(Receipt.TABLE_RECEIPTS,
                 allColumns, "trip_id = ?", new String[] {"" + tripId} , null, null, null);
         cursor.moveToFirst();
@@ -130,8 +110,7 @@ public class ReceiptDataSource {
         else
             values.putNull(Receipt.COLUMN_COMMENT);
 
-        long updateId = database.update(Receipt.TABLE_RECEIPTS, values, "_id = ?", new String[]{"" + rcpt.getPrimaryKey()});
-        return updateId;
+        return database.update(Receipt.TABLE_RECEIPTS, values, "_id = ?", new String[]{"" + rcpt.getPrimaryKey()});
 
     }
 

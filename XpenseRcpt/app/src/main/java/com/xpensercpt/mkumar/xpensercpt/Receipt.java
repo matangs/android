@@ -1,7 +1,12 @@
 package com.xpensercpt.mkumar.xpensercpt;
 
+import android.database.sqlite.SQLiteDatabase;
+import android.content.Context;
+import android.util.Log;
+
 /**
- * Created by mkq on 10/9/15.
+ * Created by mkumar on 10/9/15.
+ * Class to store all the data related to a receipt
  */
 public class Receipt {
 
@@ -115,46 +120,46 @@ public class Receipt {
 //+(NSMutableArray*)loadReceipts:(NSInteger)tripId;
 //+(void)deleteReceipt:(Receipt*)rcpt;
 
-    String imagePath(String imgId){
-        return null;
-        /*
-        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-        NSString* documentsDirectory = [paths objectAtIndex:0];
-        return [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"%lu/%lu.%@.jpg", (long)self.m_tripKey, (long)self.m_primaryKey,imgId]];
+    public void deleteReceipt(Context ctxt, SQLiteDatabase database) {
 
-        */
+        String[] imgIds = m_photo.split(",");
+        for (String imgId :
+                imgIds) {
+            RcptHelper.deleteReceiptImage(ctxt, (int)m_tripKey, imagePath(imgId));
+        }
+
+        long id = getPrimaryKey();
+        System.out.println("Receipt deleted with id: " + id);
+        database.delete(Receipt.TABLE_RECEIPTS, Receipt.COLUMN_ID
+                + " = " + id, null);
     }
 
-    boolean isSame(Receipt rcpt){
+    String imagePath(String imgId){
+        return m_primaryKey + "." + imgId + ".jpg";
+    }
 
-        if (rcpt.m_amount != m_amount || rcpt.m_primaryKey != rcpt.m_primaryKey || rcpt.m_tripKey != m_tripKey)
+    boolean isSame(Receipt rcpt) {
+
+        if (rcpt.m_amount != m_amount || rcpt.m_primaryKey != m_primaryKey || rcpt.m_tripKey != m_tripKey)
             return false;
 
         boolean emptyCommment = false;
         if ((rcpt.m_comment == null || rcpt.m_comment.equals("")) &&
-        (m_comment == null || m_comment.equals("")))
-        {
+                (m_comment == null || m_comment.equals(""))) {
             emptyCommment = true;
         }
 
-        if (emptyCommment == false){
-            if (rcpt.m_comment != m_comment && rcpt.m_comment.equals(m_comment) == false)
-            return false;
+        if (!emptyCommment) {
+            try {
+                assert rcpt.m_comment != null;
+                if (!rcpt.m_comment.equals(m_comment))
+                    return false;
+            } catch (java.lang.NullPointerException e) {
+                Log.w("Null", "Comment copmarison");
+            }
         }
 
-        if (rcpt.m_currency != m_currency && rcpt.m_currency.equals(m_currency) == false)
-            return false;
-
-        if (rcpt.m_date != m_date && rcpt.m_date.equals(m_date) == false)
-            return false;
-
-        if (rcpt.m_expenseType != m_expenseType && rcpt.m_expenseType.equals(m_expenseType) == false)
-            return false;
-
-        if (rcpt.m_photo != m_photo && rcpt.m_photo.equals(m_photo) == false)
-            return false;
-
-        return true;
+        return rcpt.m_currency.equals(m_currency) && rcpt.m_date.equals(m_date) && rcpt.m_expenseType.equals(m_expenseType) && rcpt.m_photo.equals(m_photo);
 
     }
 

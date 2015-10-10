@@ -2,21 +2,31 @@ package com.xpensercpt.mkumar.xpensercpt;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.content.Context;
+import java.io.File;
+import java.io.OutputStream;
+import java.io.InputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import android.util.Log;
 
 /**
- * Created by mkq on 10/9/15.
+ * Created by mkumar on 10/9/15.
+ * SqlHelper to create database when the app is loaded first time.
+ *
  */
 public class MySQLiteHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "remitjoy.db";
     private static final int DATABASE_VERSION = 1;
+    private Context m_context;
 
 
     public MySQLiteHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        m_context = context;
     }
 
     @Override
@@ -54,16 +64,50 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         insertReceipt(db, parisTripId,17.9f, "EUR","Lunch",2,"03-06-2015","1");
 
         insertReceipt(db, japanTripId,7063.0f, "JPY","Dinner",3,"08-18-2015","1");
-        insertReceipt(db, japanTripId,3114.0f, "JPY","Lunch",2,"08-19-2015","1");
-        
+        insertReceipt(db, japanTripId,8391.0f, "JPY","Lunch",2,"08-19-2015","1");
+
+        // create trip directory
+        RcptHelper.createTripDirectory(m_context, (int)parisTripId);
+        RcptHelper.createTripDirectory(m_context, (int)japanTripId);
+
+        // now move 5 images to their right place
+        copyImgToApp("" + parisTripId, "1.1", R.drawable.r1_1);
+        copyImgToApp("" + parisTripId, "2.1", R.drawable.r2_1);
+        copyImgToApp("" + parisTripId, "3.1", R.drawable.r3_1);
+        copyImgToApp("" + japanTripId, "4.1", R.drawable.r4_1);
+        copyImgToApp("" + japanTripId, "5.1", R.drawable.r5_1);
     }
+
+    private void copyImgToApp(String tripId, String rcptName, int resourceId){
+        File file = new File(m_context.getExternalFilesDir(null) + "/" + tripId, rcptName);
+        try {
+            // Very simple code to copy a picture from the application's
+            // resource into the external file.  Note that this code does
+            // no error checking, and assumes the picture is small (does not
+            // try to copy it in chunks).  Note that if external storage is
+            // not currently mounted this will silently fail.
+            InputStream is = m_context.getResources().openRawResource(resourceId);
+            OutputStream os = new FileOutputStream(file);
+            byte[] data = new byte[is.available()];
+            int test = is.read(data);
+            assert test > 0;
+            os.write(data);
+            is.close();
+            os.close();
+        } catch (IOException e) {
+            // Unable to create file, likely because external storage is
+            // not currently mounted.
+            Log.w("ExternalStorage", "Error writing " + file, e);
+        }
+    }
+
+
 
     private long insertTrip(SQLiteDatabase db, String name, String date){
         ContentValues values = new ContentValues();
         values.put(Trip.COLUMN_NAME, name);
         values.put(Trip.COLUMN_DATE, date);
-        long insertId = db.insert(Trip.TABLE_TRIPS, null, values);
-        return insertId;
+        return db.insert(Trip.TABLE_TRIPS, null, values);
     }
     
     private long insertReceipt(SQLiteDatabase db, long trip_id, float amount, String currency, String type, int type_order, String date, String photo){
@@ -76,27 +120,8 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         values.put(Receipt.COLUMN_DATE,date);
         values.put(Receipt.COLUMN_PHOTO,photo);
 
-        long insertId = db.insert(Receipt.TABLE_RECEIPTS, null, values);
-        return insertId;
+        return db.insert(Receipt.TABLE_RECEIPTS, null, values);
     }
-
-    /*
-
-insert into trips(name,date) values('Paris (Sample)','03-01-2015');
-insert into trips(name,date) values('Japan (Sample)','08-18-2015');
-
-insert into receipts(trip_id, amount, currency, type, type_order, date, photo) values (1,51.2, 'EUR','Dinner',3,'03-01-2015','1');
-insert into receipts(trip_id, amount, currency, type, type_order, date, photo) values (1,95.0, 'EUR','Taxi',10,'03-01-2015','1');
-insert into receipts(trip_id, amount, currency, type, type_order, date, photo) values (1,17.9, 'EUR','Lunch',2,'03-06-2015','1');
-insert into receipts(trip_id, amount, currency, type, type_order, date, photo) values (2,7063.0, 'JPY','Dinner',3,'08-18-2015','1');
-insert into receipts(trip_id, amount, currency, type, type_order, date, photo) values (2,3114.0, 'JPY','Lunch',2,'08-19-2015','1');
-
-1|1|51.2|EUR|Dinner|3|03-01-2015|1|
-2|1|95.0|EUR|Taxi|10|03-01-2015|1|
-3|1|17.9|EUR|Lunch|2|03-06-2015|1|
-4|2|7063.0|JPY|Dinner|3|08-18-2015|1|
-5|2|3114.0|JPY|Lunch|2|08-19-2015|1|
-     */
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
