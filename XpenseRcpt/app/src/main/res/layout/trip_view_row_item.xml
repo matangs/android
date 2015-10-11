@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:padding="0dp"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/separator"
+        style="?android:attr/listSeparatorTextViewStyle"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/light_orange"
+        android:textColor="?android:attr/textColorSecondary"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:textSize="16dp"
+        android:textStyle="normal" />
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:singleLine="true"
+        android:textColor="?android:attr/textColorPrimary"
+        android:textSize="16dp"
+        android:textStyle="normal" />
+
+    <TextView
+        android:id="@+id/subtitle"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="8dp"
+        android:paddingRight="8dp"
+        android:paddingBottom="8dp"
+        android:singleLine="true"
+        android:textColor="?android:attr/textColorSecondary"
+        android:textSize="12dp"
+        android:textStyle="normal" />
+
+</LinearLayout>

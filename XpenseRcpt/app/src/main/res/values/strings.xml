@@ -6,4 +6,10 @@
     <string name="title_activity_receipt">Receipt</string>
     <string name="title_activity_receipt_image">Receipt Image</string>
     <string name="title_activity_pdfview">PDF View</string>
+    <color name="light_orange">#FFF8F0</color>
+    <color name="dark_orange">#FFDCBB</color>
+    <color name="darkest_orange">#FF9822</color>
+    <string name="add_trip">Add</string>
+    <string name="added_trips">Added Trips</string>
+    <string name="new_trip">New Trip</string>
 </resources>
