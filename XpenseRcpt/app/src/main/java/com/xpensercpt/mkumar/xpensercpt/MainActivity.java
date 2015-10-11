@@ -14,6 +14,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -27,6 +28,7 @@ import java.util.ArrayList;
 public class MainActivity extends ListActivity {
 
     private TripDataSource m_tripDataSource;
+    private ArrayList<Trip> m_trips;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,12 +50,12 @@ public class MainActivity extends ListActivity {
 
         m_tripDataSource = new TripDataSource(this);
         m_tripDataSource.open();
-        ArrayList<Trip> trips = m_tripDataSource.getAllTrips();
+        m_trips = m_tripDataSource.getAllTrips();
         ArrayList<SuperObjectItem> objects = new ArrayList<>();
         objects.add(new SuperObjectItem(0,null, null, null));
         int index = 1;
         for (Trip trip :
-                trips) {
+                m_trips) {
             objects.add(new SuperObjectItem(index,trip, null, null));
             index++;
         }
@@ -61,6 +63,24 @@ public class MainActivity extends ListActivity {
 
         ListView listView = getListView();
         listView.setAdapter(adapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position,
+                                    long id) {
+                if (position == 0){
+                    Intent myIntent = new Intent(MainActivity.this, AddTripActivity.class);
+                    //myIntent.putExtra("key", value); //Optional parameters
+                    MainActivity.this.startActivity(myIntent);
+                }
+                else{
+                    Trip trip = m_trips.get(position - 1);
+                    // launch intent tripsactivity
+                    Intent myIntent = new Intent(MainActivity.this, TripsActivity.class);
+                    //myIntent.putExtra("key", value); //Optional parameters
+                    MainActivity.this.startActivity(myIntent);
+                }
+            }
+        });
 
         /*
         ArrayAdapter<Trip> adapter = new ArrayAdapter<Trip>(
