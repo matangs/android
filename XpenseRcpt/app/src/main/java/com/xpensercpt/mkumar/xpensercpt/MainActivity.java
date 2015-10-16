@@ -95,6 +95,32 @@ public class MainActivity extends AppCompatActivity {
                 MainActivity.this.startActivity(myIntent);
             }
         });
+
+        // Create a ListView-specific touch listener. ListViews are given special treatment because
+        // by default they handle touches for their list items... i.e. they're in charge of drawing
+        // the pressed state (the list selector), handling list item clicks, etc.
+        SwipeDismissListViewTouchListener touchListener =
+                new SwipeDismissListViewTouchListener(
+                        listView,
+                        new SwipeDismissListViewTouchListener.DismissCallbacks() {
+                            @Override
+                            public boolean canDismiss(int position) {
+                                return true;
+                            }
+
+                            @Override
+                            public void onDismiss(ListView listView, int[] reverseSortedPositions) {
+                                for (int position : reverseSortedPositions) {
+                                    m_adapter.remove(m_adapter.getItem(position));
+                                }
+                                m_adapter.notifyDataSetChanged();
+                            }
+                        });
+        listView.setOnTouchListener(touchListener);
+        // Setting this scroll listener is required to ensure that during ListView scrolling,
+        // we don't look for swipes.
+        listView.setOnScrollListener(touchListener.makeScrollListener());
+
     }
 
     @TargetApi(21)
