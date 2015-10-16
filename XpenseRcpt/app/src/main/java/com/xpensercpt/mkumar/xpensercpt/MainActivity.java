@@ -1,10 +1,7 @@
 package com.xpensercpt.mkumar.xpensercpt;
 
 import android.annotation.TargetApi;
-import android.app.ListActivity;
-import android.content.Intent;
-import android.graphics.Color;
-import android.os.Build;
+import android.content.Intent;import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -15,26 +12,25 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.view.Window;
 import android.view.WindowManager;
 
 import java.util.ArrayList;
-//import android.content.DialogInterface;
-//import android.app.AlertDialog;
 
-public class MainActivity extends ListActivity {
+public class MainActivity extends AppCompatActivity {
 
     private TripDataSource m_tripDataSource;
+    private TripAdapter m_adapter;
     private ArrayList<Trip> m_trips;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -47,51 +43,58 @@ public class MainActivity extends ListActivity {
         });
 
         setStatusBarColor();
+        addedTripListView();
+        onAddTripBtnClick();
 
-        m_tripDataSource = new TripDataSource(this);
+    }
+
+    private void onAddTripBtnClick(){
+        Button doneButton = (Button) findViewById(R.id.addNewTripButton);
+        doneButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent myIntent = new Intent(MainActivity.this, AddTripActivity.class);
+                //myIntent.putExtra("key", value); //Optional parameters
+                MainActivity.this.startActivity(myIntent);
+            }
+        });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        int prevCount = m_trips.size();
+
         m_tripDataSource.open();
-        m_trips = m_tripDataSource.getAllTrips();
-        ArrayList<SuperObjectItem> objects = new ArrayList<>();
-        objects.add(new SuperObjectItem(0,null, null, null));
-        int index = 1;
-        for (Trip trip :
-                m_trips) {
-            objects.add(new SuperObjectItem(index,trip, null, null));
-            index++;
-        }
-        ListAdapter adapter = new TripAdapter(this,R.layout.trip_view_row_item,objects);
+        ArrayList<Trip> newTrips = m_tripDataSource.getAllTrips();
+        m_tripDataSource.close();
 
-        ListView listView = getListView();
-        listView.setAdapter(adapter);
+        int newCount = newTrips.size();
+        if (newCount > prevCount) {
+            m_trips.clear();
+            m_trips.addAll(newTrips);
+            m_adapter.notifyDataSetChanged();
+        }
+    }
+
+    private void addedTripListView(){
+        m_tripDataSource = new TripDataSource(this);
+        m_trips = new ArrayList<>();//m_tripDataSource.getAllTrips();
+        m_adapter = new TripAdapter(this,R.layout.trip_view_row_item,m_trips);
+
+        ListView listView = (ListView)findViewById(R.id.added_trip_list);//getListView();
+        listView.setAdapter(m_adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position,
                                     long id) {
-                if (position == 0){
-                    Intent myIntent = new Intent(MainActivity.this, AddTripActivity.class);
-                    //myIntent.putExtra("key", value); //Optional parameters
-                    MainActivity.this.startActivity(myIntent);
-                }
-                else{
-                    Trip trip = m_trips.get(position - 1);
-                    // launch intent tripsactivity
-                    Intent myIntent = new Intent(MainActivity.this, TripsActivity.class);
-                    //myIntent.putExtra("key", value); //Optional parameters
-                    MainActivity.this.startActivity(myIntent);
-                }
+                Trip trip = m_trips.get(position);
+                // launch intent tripsactivity
+                Intent myIntent = new Intent(MainActivity.this, TripsActivity.class);
+                //myIntent.putExtra("key", value); //Optional parameters
+                MainActivity.this.startActivity(myIntent);
             }
         });
-
-        /*
-        ArrayAdapter<Trip> adapter = new ArrayAdapter<Trip>(
-                this,
-                android.R.layout.simple_list_item_1,
-                trips
-        );
-        listView.setAdapter(adapter);
-        */
-
-
     }
 
     @TargetApi(21)

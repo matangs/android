@@ -15,18 +15,18 @@ import java.util.List;
  * Created by mkumar on 10/10/15.
  * ArrayAdapter for the Trip activity
  */
-public class TripAdapter extends ArrayAdapter<SuperObjectItem> {
+public class TripAdapter extends ArrayAdapter<Trip> {
 
     private Context m_context;
     private int m_layoutResourceId;
-    private List<SuperObjectItem> m_superObjects;
+    private List<Trip> m_trips;
 
-    public TripAdapter(Context context, int resource, List<SuperObjectItem> objects) {
+    public TripAdapter(Context context, int resource, List<Trip> objects) {
         super(context, resource, objects);
 
         m_context = context;
         m_layoutResourceId = resource;
-        m_superObjects = objects;
+        m_trips = objects;
     }
 
     @Override
@@ -36,36 +36,22 @@ public class TripAdapter extends ArrayAdapter<SuperObjectItem> {
             LayoutInflater inflater = ((Activity) m_context).getLayoutInflater();
             convertView = inflater.inflate(m_layoutResourceId, parent, false);
         }
-        // object item based on the position
-        SuperObjectItem objectItem = m_superObjects.get(position);
-        if (!objectItem.isTrip()){
-            TextView section = (TextView) convertView.findViewById(R.id.separator);
-            section.setVisibility(View.VISIBLE);
-            section.setText(R.string.add_trip);
 
-            TextView textViewItem = (TextView) convertView.findViewById(R.id.title);
-            textViewItem.setText(R.string.new_trip);
-            TextView textViewItem2 = (TextView) convertView.findViewById(R.id.subtitle);
-            textViewItem2.setText("");
-            textViewItem2.setVisibility(View.GONE);
-            return convertView;
-        }
         TextView section = (TextView) convertView.findViewById(R.id.separator);
-        if (position == 1) {
+        if (position == 0) {
             section.setVisibility(View.VISIBLE);
             section.setText(R.string.added_trips);
         }
         else
             section.setVisibility(View.GONE);
 
-        Trip trip = objectItem.getTrip();
+        Trip trip = m_trips.get(position);
         // get the TextView and then set the text (item name) and tag (item ID) values
-        TextView textViewItem = (TextView) convertView.findViewById(R.id.title);
-        TextView textViewItem2 = (TextView) convertView.findViewById(R.id.subtitle);
-        textViewItem2.setVisibility(View.VISIBLE);
+        TextView title = (TextView) convertView.findViewById(R.id.title);
+        TextView subtitle = (TextView) convertView.findViewById(R.id.subtitle);
 
-        textViewItem.setText(trip.getName());
-        textViewItem2.setText(trip.getDate());
+        title.setText(trip.getName());
+        subtitle.setText(trip.getDate());
 
         return convertView;
 

@@ -14,6 +14,8 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.DatePicker;
+import android.widget.TextView;
 
 public class AddTripActivity extends AppCompatActivity {
 
@@ -63,21 +65,51 @@ public class AddTripActivity extends AppCompatActivity {
                 //Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                 //        .setAction("Action", null).show();
 
-                new AlertDialog.Builder(AddTripActivity.this)
-                        .setTitle("Delete entry")
-                        .setMessage("Are you sure you want to delete this entry?")
-                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                // continue with delete
-                            }
-                        })
-                        .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                // do nothing
-                            }
-                        })
-                        .setIcon(android.R.drawable.ic_dialog_alert)
-                        .show();
+                //android:id="@+id/editTextTripName"
+                //android:id="@+id/datePickerAddTrip" />
+                TextView nameView = (TextView)AddTripActivity.this.findViewById(R.id.editTextTripName);
+                DatePicker tripDate = (DatePicker)AddTripActivity.this.findViewById(R.id.datePickerAddTrip);
+                String name = nameView.getText().toString();
+                String date = "10-15-2015";
+
+                if (name.isEmpty()) {
+
+                    new AlertDialog.Builder(AddTripActivity.this)
+                            .setTitle("Nothing to add")
+                            .setMessage("Did you forget to enter a name for the trip?")
+                            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // continue with delete
+                                }
+                            })
+                            .setIcon(android.R.drawable.ic_dialog_alert)
+                            .show();
+                    return;
+                    /*
+                    new AlertDialog.Builder(AddTripActivity.this)
+                            .setTitle("Delete entry")
+                            .setMessage("Are you sure you want to delete this entry?")
+                            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // continue with delete
+                                }
+                            })
+                            .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // do nothing
+                                }
+                            })
+                            .setIcon(android.R.drawable.ic_dialog_alert)
+                            .show();
+                            */
+
+                }
+
+                TripDataSource dm = new TripDataSource(AddTripActivity.this);
+                dm.open();
+                dm.insertTrip(name,date);
+                dm.close();
+                AddTripActivity.this.finish();
 
             }
         });
