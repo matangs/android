@@ -12,18 +12,6 @@
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/separator"
-            style="?android:attr/listSeparatorTextViewStyle"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/light_orange"
-            android:textColor="?android:attr/textColorSecondary"
-            android:paddingTop="10dp"
-            android:paddingBottom="10dp"
-            android:textSize="16dp"
-            android:textStyle="normal" />
-
-        <TextView
             android:id="@+id/title"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"

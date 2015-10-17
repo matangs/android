@@ -177,4 +177,16 @@ public class Receipt {
         m_tripKey = rcpt.getTripKey();
     }
 
+    //    NSString* title = [NSString stringWithFormat:@"%@ - %@",rcpt.m_date, rcpt.m_expenseType];
+    //NSString* subtitle = [NSString stringWithFormat:@"Amount - %.02f", rcpt.m_amount];
+
+    public String getTitle(){
+        return m_date + " - " + m_expenseType;
+    }
+
+    public String getSubTitle(){
+        return "Amount - " + m_amount + " " + m_currency;
+    }
+
+
 }

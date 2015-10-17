@@ -8,25 +8,24 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by mkumar on 10/10/15.
- * ArrayAdapter for the Trip activity
+ * Created by mkumar on 10/17/15.
+ * Adapter for TripView
  */
-public class TripAdapter extends ArrayAdapter<Trip> {
+public class ReceiptAdapter  extends ArrayAdapter<Receipt> {
 
     private Context m_context;
     private int m_layoutResourceId;
-    private List<Trip> m_trips;
+    private List<Receipt> m_receipts;
 
-    public TripAdapter(Context context, int resource, List<Trip> objects) {
+    public ReceiptAdapter(Context context, int resource, List<Receipt> objects) {
         super(context, resource, objects);
 
         m_context = context;
         m_layoutResourceId = resource;
-        m_trips = objects;
+        m_receipts = objects;
     }
 
     @Override
@@ -37,13 +36,13 @@ public class TripAdapter extends ArrayAdapter<Trip> {
             convertView = inflater.inflate(m_layoutResourceId, parent, false);
         }
 
-        Trip trip = m_trips.get(position);
+        Receipt rcpt  = m_receipts.get(position);
         // get the TextView and then set the text (item name) and tag (item ID) values
         TextView title = (TextView) convertView.findViewById(R.id.title);
         TextView subtitle = (TextView) convertView.findViewById(R.id.subtitle);
 
-        title.setText(trip.getName());
-        subtitle.setText(trip.getDate());
+        title.setText(rcpt.getTitle());
+        subtitle.setText(rcpt.getSubTitle());
 
         return convertView;
 

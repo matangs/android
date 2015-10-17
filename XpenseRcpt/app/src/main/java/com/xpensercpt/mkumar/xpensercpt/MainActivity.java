@@ -53,8 +53,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void onAddTripBtnClick(){
-        Button doneButton = (Button) findViewById(R.id.addNewTripButton);
-        doneButton.setOnClickListener(new View.OnClickListener() {
+        Button addButton = (Button) findViewById(R.id.addNewTripButton);
+        addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent myIntent = new Intent(MainActivity.this, AddTripActivity.class);
@@ -119,39 +119,11 @@ public class MainActivity extends AppCompatActivity {
                 Trip trip = m_trips.get(position);
                 // launch intent tripsactivity
                 Intent myIntent = new Intent(MainActivity.this, TripsActivity.class);
-                //myIntent.putExtra("key", value); //Optional parameters
+                myIntent.putExtra("TripID", trip.getPrimaryKey()); //Optional parameters
+                myIntent.putExtra("TripName", trip.getName());
                 MainActivity.this.startActivity(myIntent);
             }
         });
-
-
-        /*
-        // Create a ListView-specific touch listener. ListViews are given special treatment because
-        // by default they handle touches for their list items... i.e. they're in charge of drawing
-        // the pressed state (the list selector), handling list item clicks, etc.
-        SwipeDismissListViewTouchListener touchListener =
-                new SwipeDismissListViewTouchListener(
-                        listView,
-                        new SwipeDismissListViewTouchListener.DismissCallbacks() {
-                            @Override
-                            public boolean canDismiss(int position) {
-                                return true;
-                            }
-
-                            @Override
-                            public void onDismiss(ListView listView, int[] reverseSortedPositions) {
-                                for (int position : reverseSortedPositions) {
-                                    m_adapter.remove(m_adapter.getItem(position));
-                                }
-                                m_adapter.notifyDataSetChanged();
-                            }
-                        });
-        listView.setOnTouchListener(touchListener);
-        // Setting this scroll listener is required to ensure that during ListView scrolling,
-        // we don't look for swipes.
-        listView.setOnScrollListener(touchListener.makeScrollListener());
-        */
-
     }
 
     @TargetApi(21)
@@ -193,26 +165,4 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void onButtonSelect(View view) {
-        Intent myIntent = new Intent(this, AddTripActivity.class);
-        //myIntent.putExtra("key", value); //Optional parameters
-        this.startActivity(myIntent);
-        /*
-        new AlertDialog.Builder(this)
-                .setTitle("Delete entry")
-                .setMessage("Are you sure you want to delete this entry?")
-                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        // continue with delete
-                    }
-                })
-                .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        // do nothing
-                    }
-                })
-                .setIcon(android.R.drawable.ic_dialog_alert)
-                .show();
-                */
-    }
 }

@@ -20,6 +20,11 @@ public class Trip {
 
     private ArrayList<Receipt> m_receipts;
 
+    public Trip(long tripId){
+        m_primaryKey = tripId;
+        m_receipts = new ArrayList<>();
+    }
+
     public void setPrimaryKey(long id){
         m_primaryKey = id;
     }

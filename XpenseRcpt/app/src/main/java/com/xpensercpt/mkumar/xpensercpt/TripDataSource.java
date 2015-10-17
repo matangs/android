@@ -73,7 +73,7 @@ public class TripDataSource {
     }
 
     private Trip cursorToTrip(Cursor cursor) {
-        Trip trip = new Trip();
+        Trip trip = new Trip(-1);
         trip.setPrimaryKey(cursor.getLong(0));
         trip.setName(cursor.getString(1));
         trip.setDate(cursor.getString(2));
