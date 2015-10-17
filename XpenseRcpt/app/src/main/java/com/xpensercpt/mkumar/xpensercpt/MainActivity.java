@@ -11,11 +11,15 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.view.Window;
 import android.view.WindowManager;
+
+import com.xpensercpt.mkumar.xpensercpt.swipe.SwipeToDismissTouchListener;
+import com.xpensercpt.mkumar.xpensercpt.swipe.adapter.ListViewAdapter;
 
 import java.util.ArrayList;
 
@@ -84,10 +88,34 @@ public class MainActivity extends AppCompatActivity {
 
         ListView listView = (ListView)findViewById(R.id.added_trip_list);//getListView();
         listView.setAdapter(m_adapter);
+
+
+        final SwipeToDismissTouchListener<ListViewAdapter> touchListener =
+                new SwipeToDismissTouchListener<>(
+                        new ListViewAdapter(listView),
+                        new SwipeToDismissTouchListener.DismissCallbacks<ListViewAdapter>() {
+                            @Override
+                            public boolean canDismiss(int position) {
+                                return true;
+                            }
+
+                            @Override
+                            public void onDismiss(ListViewAdapter view, int position) {
+                                m_adapter.remove(m_trips.get(position));
+                            }
+                        });
+        listView.setOnTouchListener(touchListener);
+        listView.setOnScrollListener((AbsListView.OnScrollListener) touchListener.makeScrollListener());
+
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position,
                                     long id) {
+
+                if (touchListener.existPendingDismisses()) {
+                    touchListener.undoPendingDismiss();
+                    return;
+                }
                 Trip trip = m_trips.get(position);
                 // launch intent tripsactivity
                 Intent myIntent = new Intent(MainActivity.this, TripsActivity.class);
@@ -96,6 +124,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
+        /*
         // Create a ListView-specific touch listener. ListViews are given special treatment because
         // by default they handle touches for their list items... i.e. they're in charge of drawing
         // the pressed state (the list selector), handling list item clicks, etc.
@@ -120,6 +150,7 @@ public class MainActivity extends AppCompatActivity {
         // Setting this scroll listener is required to ensure that during ListView scrolling,
         // we don't look for swipes.
         listView.setOnScrollListener(touchListener.makeScrollListener());
+        */
 
     }
 
