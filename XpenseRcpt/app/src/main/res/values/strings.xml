@@ -12,4 +12,152 @@
     <string name="add_trip">Add</string>
     <string name="added_trips">Added Trips</string>
     <string name="new_trip">New Trip</string>
+    <string-array name="currency_short_name_arr">
+        <item>USD</item>
+        <item>EUR</item>
+        <item>AED</item>
+        <item>ARS</item>
+        <item>AUD</item>
+        <item>BGN</item>
+        <item>BRL</item>
+        <item>CAD</item>
+        <item>CHF</item>
+        <item>CLP</item>
+        <item>CNY</item>
+        <item>COP</item>
+        <item>CZK</item>
+        <item>DKK</item>
+        <item>GBP</item>
+        <item>HKD</item>
+        <item>HUF</item>
+        <item>IDR</item>
+        <item>ILS</item>
+        <item>INR</item>
+        <item>JPY</item>
+        <item>KRW</item>
+        <item>KZT</item>
+        <item>MNT</item>
+        <item>MXN</item>
+        <item>MYR</item>
+        <item>NOK</item>
+        <item>NZD</item>
+        <item>PEN</item>
+        <item>PLN</item>
+        <item>RON</item>
+        <item>RUB</item>
+        <item>SEK</item>
+        <item>SGD</item>
+        <item>THB</item>
+        <item>TRY</item>
+        <item>TWD</item>
+        <item>ZAR</item>
+    </string-array>
+    <string-array name="currency_long_name_arr">
+        <item>USD - US Dollar</item>
+        <item>EUR - Euro</item>
+        <item>AED - UAE - Dirham</item>
+        <item>ARS - Argentine Peso</item>
+        <item>AUD - Australian Dollar</item>
+        <item>BGN - Bulgarian LEV</item>
+        <item>BRL - Brazilian Real</item>
+        <item>CAD - Canadian Dollar</item>
+        <item>CHF - Swiss Franc</item>
+        <item>CLP - Chilean Peso</item>
+        <item>CNY - Yuan Enminbi</item>
+        <item>COP - Columbian Peso</item>
+        <item>CZK - Czech Kruna</item>
+        <item>DKK - Danish Krone</item>
+        <item>GBP - Pound Sterling</item>
+        <item>HKD - Hong-Kong Dollar</item>
+        <item>HUF - Forint</item>
+        <item>IDR - Indonesian Rupiah</item>
+        <item>ILS - Israeli Shequel</item>
+        <item>INR - Indian Rupee</item>
+        <item>JPY - Yen</item>
+        <item>KRW - Won</item>
+        <item>KZT - Tenge</item>
+        <item>MNT - Tugrik</item>
+        <item>MXN - Mexican Peso</item>
+        <item>MYR - Malaysian Ringgit</item>
+        <item>NOK - Norwegian Krone</item>
+        <item>NZD - New Zealand Dollar</item>
+        <item>PEN - Nuevo Sol</item>
+        <item>PLN - Zloty</item>
+        <item>RON - Nouveau Leu roumain</item>
+        <item>RUB - Russian Ruble</item>
+        <item>SEK - Swedish Krona</item>
+        <item>SGD - Singapore Dollar</item>
+        <item>THB - Thailand Baht</item>
+        <item>TRY - Turkish Lira</item>
+        <item>TWD - Taiwan Dollar</item>
+        <item>ZAR - Rand</item>
+    </string-array>
+    <string-array name="expense_type_array">
+        <item>Books / Subscriptions</item>
+        <item>Breakfast</item>
+        <item>Car Rental</item>
+        <item>Cell Phone</item>
+        <item>Computer Supplies</item>
+        <item>Dinner</item>
+        <item>Entertainment</item>
+        <item>Fuel / Gasoline</item>
+        <item>Group Mean (Non Travel)</item>
+        <item>Hotel</item>
+        <item>Immigration/Passport/Visa Fees</item>
+        <item>Internet</item>
+        <item>Laundry</item>
+        <item>Lunch</item>
+        <item>Meal with Client/Customer</item>
+        <item>Membership</item>
+        <item>Mileage</item>
+        <item>Office Supplies/Stationery</item>
+        <item>Other lodging services</item>
+        <item>Parking</item>
+        <item>Perdiem</item>
+        <item>Phone/Fax</item>
+        <item>Postages</item>
+        <item>Professional Services</item>
+        <item>Public Transportation</item>
+        <item>Seminars/Conferences</item>
+        <item>Taxi</item>
+        <item>Toll</item>
+        <item>Train</item>
+        <item>Training</item>
+        <item>Travel Other</item>
+        <item>Travel Service Fee</item>
+    </string-array>
+    <integer-array name="expense_type_array_order">
+        <item>18</item>
+        <item>1</item>
+        <item>13</item>
+        <item>19</item>
+        <item>20</item>
+        <item>3</item>
+        <item>21</item>
+        <item>14</item>
+        <item>4</item>
+        <item>6</item>
+        <item>22</item>
+        <item>8</item>
+        <item>9</item>
+        <item>2</item>
+        <item>5</item>
+        <item>23</item>
+        <item>17</item>
+        <item>16</item>
+        <item>7</item>
+        <item>15</item>
+        <item>24</item>
+        <item>25</item>
+        <item>26</item>
+        <item>27</item>
+        <item>12</item>
+        <item>29</item>
+        <item>10</item>
+        <item>28</item>
+        <item>11</item>
+        <item>30</item>
+        <item>31</item>
+        <item>32</item>
+    </integer-array>
 </resources>

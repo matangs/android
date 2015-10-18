@@ -1,13 +1,121 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingLeft="0dp"
+    android:paddingRight="0dp"
+    android:paddingTop="0dp"
+    android:paddingBottom="0dp"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:showIn="@layout/activity_receipt"
-    tools:context="com.xpensercpt.mkumar.xpensercpt.ReceiptActivity">
+    tools:context="com.xpensercpt.mkumar.xpensercpt.ReceiptActivity"
+    android:background="@android:color/white"
+    android:orientation="vertical">
+    <TextView
+        android:id="@+id/rcptCaptureTextView"
+        style="?android:attr/listSeparatorTextViewStyle"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/light_orange"
+        android:textColor="?android:attr/textColorSecondary"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:textSize="16dp"
+        android:text="Capture Receipts"
+        android:textStyle="normal"/>
 
-</RelativeLayout>
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/imageButtonRcptCamera"
+        android:layout_gravity="center_horizontal"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp"
+        android:background="@android:color/white"
+        android:src="@drawable/camera_filled_50_2" />
+
+    <TextView
+        android:id="@+id/rcptAmountTextView"
+        style="?android:attr/listSeparatorTextViewStyle"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/light_orange"
+        android:textColor="?android:attr/textColorSecondary"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:textSize="16dp"
+        android:text="Amount"
+        android:textStyle="normal"/>
+    <EditText
+        android:paddingTop="10dp"
+        android:paddingLeft="10dp"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/editTextCurrencyType"
+        android:hint="amount" />
+
+    <Spinner
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/spinnerCurrencyName"
+        android:layout_gravity="left"
+        android:entries="@array/currency_long_name_arr"/>
+
+    <TextView
+        android:id="@+id/rcptReceiptsTextView"
+        style="?android:attr/listSeparatorTextViewStyle"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/light_orange"
+        android:textColor="?android:attr/textColorSecondary"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:textSize="16dp"
+        android:text="Receipts"
+        android:textStyle="normal"/>
+    <EditText
+        android:paddingTop="10dp"
+        android:paddingLeft="10dp"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/editTextRcptDate"
+        android:hint="EUR"
+        android:inputType="numberDecimal" />
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Pick Date"
+        android:onClick="showDatePickerDialog" />
+    <Spinner
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/spinnerExpenseType"
+        android:layout_gravity="left"
+        android:entries="@array/expense_type_array"/>
+
+    <TextView
+        android:id="@+id/rcptNotesTextView"
+        style="?android:attr/listSeparatorTextViewStyle"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/light_orange"
+        android:textColor="?android:attr/textColorSecondary"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:textSize="16dp"
+        android:text="Enter notes"
+        android:textStyle="normal"/>
+    <EditText
+        android:paddingTop="10dp"
+        android:paddingLeft="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/editTextRcptNote"
+        android:hint="Details about this receipt." />
+
+
+
+
+</LinearLayout>
