@@ -15,6 +15,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDialogFragment;
 import android.support.v7.widget.Toolbar;
+import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -32,6 +33,7 @@ public class ReceiptActivity extends AppCompatActivity{
     public static class MyDatePickerFragment extends AppCompatDialogFragment
             implements DatePickerDialog.OnDateSetListener {
 
+        @NonNull
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             // Use the current date as the default date in the picker
@@ -47,9 +49,15 @@ public class ReceiptActivity extends AppCompatActivity{
         public void onDateSet(DatePicker view, int year, int month, int day) {
             // Do something with the date chosen by the user
             ReceiptActivity activity = (ReceiptActivity) getActivity();
-            EditText dateText = (EditText) activity.findViewById(R.id.editTextCurrencyType);
-            dateText.setText(month +  "-" + day + "-" + year);
+            EditText dateText = (EditText) activity.findViewById(R.id.editTextRcptDate);
+            dateText.setText(String.format("%02d", month+1) +  "-" + String.format("%02d", day) + "-" + year);
         }
+    }
+    public void showDatePickerDialog(View v) {
+
+        AppCompatDialogFragment newFragment = new MyDatePickerFragment();
+        newFragment.show(getSupportFragmentManager(), "datePicker");
+        //newFragment.show(getSupportFragmentManager(), "datePicker");
     }
 
     @Override
@@ -70,13 +78,27 @@ public class ReceiptActivity extends AppCompatActivity{
 
         setStatusBarColor();
         setSaveButton();
+        setDateEditBox();
     }
 
-    public void showDatePickerDialog(View v) {
+    private void setDateEditBox(){
+        EditText myEditText = (EditText) findViewById(R.id.editTextRcptDate);
 
-        AppCompatDialogFragment newFragment = new MyDatePickerFragment();
-        newFragment.show(getSupportFragmentManager(),"datePicker");
-        //newFragment.show(getSupportFragmentManager(), "datePicker");
+        myEditText.setInputType(InputType.TYPE_NULL);
+        myEditText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showDatePickerDialog(v);
+            }
+        });
+        myEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus) {
+                    showDatePickerDialog(v);
+                }
+            }
+        });
     }
 
     private void setSaveButton(){

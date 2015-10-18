@@ -13,6 +13,9 @@
     tools:context="com.xpensercpt.mkumar.xpensercpt.ReceiptActivity"
     android:background="@android:color/white"
     android:orientation="vertical">
+    <!--
+    Camera control
+    -->
     <TextView
         android:id="@+id/rcptCaptureTextView"
         style="?android:attr/listSeparatorTextViewStyle"
@@ -27,7 +30,7 @@
         android:textStyle="normal"/>
 
     <ImageButton
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:id="@+id/imageButtonRcptCamera"
         android:layout_gravity="center_horizontal"
@@ -36,6 +39,9 @@
         android:background="@android:color/white"
         android:src="@drawable/camera_filled_50_2" />
 
+    <!--
+    Amount and currency
+    -->
     <TextView
         android:id="@+id/rcptAmountTextView"
         style="?android:attr/listSeparatorTextViewStyle"
@@ -51,20 +57,26 @@
     <EditText
         android:paddingTop="10dp"
         android:paddingLeft="10dp"
-        android:layout_width="100dp"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/editTextCurrencyType"
-        android:hint="amount" />
+        android:id="@+id/editTextRcptAmount"
+        android:inputType="numberDecimal"
+        android:hint="XX.XX" />
 
     <Spinner
-        android:layout_width="wrap_content"
+        android:paddingTop="10dp"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:id="@+id/spinnerCurrencyName"
         android:layout_gravity="left"
+        android:layout_marginBottom="10dp"
         android:entries="@array/currency_long_name_arr"/>
 
+    <!--
+    Date and type
+    -->
     <TextView
-        android:id="@+id/rcptReceiptsTextView"
+        android:id="@+id/rcptDateTypeTextView"
         style="?android:attr/listSeparatorTextViewStyle"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
@@ -73,28 +85,28 @@
         android:paddingTop="10dp"
         android:paddingBottom="10dp"
         android:textSize="16dp"
-        android:text="Receipts"
+        android:text="Date and Type"
         android:textStyle="normal"/>
     <EditText
         android:paddingTop="10dp"
         android:paddingLeft="10dp"
-        android:layout_width="100dp"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:id="@+id/editTextRcptDate"
-        android:hint="EUR"
-        android:inputType="numberDecimal" />
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Pick Date"
+        android:hint="Date"
         android:onClick="showDatePickerDialog" />
     <Spinner
-        android:layout_width="wrap_content"
+        android:paddingTop="10dp"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:id="@+id/spinnerExpenseType"
         android:layout_gravity="left"
+        android:layout_marginBottom="10dp"
         android:entries="@array/expense_type_array"/>
 
+    <!--
+    additional notes
+    -->
     <TextView
         android:id="@+id/rcptNotesTextView"
         style="?android:attr/listSeparatorTextViewStyle"
@@ -115,6 +127,22 @@
         android:id="@+id/editTextRcptNote"
         android:hint="Details about this receipt." />
 
+    <!--
+    Image list view
+    -->
+    <TextView
+        android:id="@+id/rcptReceiptsTextView"
+        style="?android:attr/listSeparatorTextViewStyle"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/light_orange"
+        android:textColor="?android:attr/textColorSecondary"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        android:textSize="16dp"
+        android:text="Receipts"
+        android:layout_marginBottom="10dp"
+        android:textStyle="normal"/>
 
 
 
