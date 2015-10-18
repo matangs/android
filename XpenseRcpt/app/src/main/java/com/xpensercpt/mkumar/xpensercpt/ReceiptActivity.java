@@ -22,11 +22,12 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import java.util.Calendar;
 
-public class ReceiptActivity extends AppCompatActivity {
+public class ReceiptActivity extends AppCompatActivity{
 
     public static class MyDatePickerFragment extends AppCompatDialogFragment
             implements DatePickerDialog.OnDateSetListener {
@@ -45,6 +46,9 @@ public class ReceiptActivity extends AppCompatActivity {
 
         public void onDateSet(DatePicker view, int year, int month, int day) {
             // Do something with the date chosen by the user
+            ReceiptActivity activity = (ReceiptActivity) getActivity();
+            EditText dateText = (EditText) activity.findViewById(R.id.editTextCurrencyType);
+            dateText.setText(month +  "-" + day + "-" + year);
         }
     }
 
