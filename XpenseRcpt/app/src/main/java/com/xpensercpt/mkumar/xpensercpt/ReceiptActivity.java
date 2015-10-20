@@ -6,6 +6,7 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -29,6 +30,9 @@ import android.widget.TextView;
 import java.util.Calendar;
 
 public class ReceiptActivity extends AppCompatActivity{
+
+    private ReceiptDataSource m_rcptDataSource;
+    private Receipt m_rcpt;
 
     public static class MyDatePickerFragment extends AppCompatDialogFragment
             implements DatePickerDialog.OnDateSetListener {
@@ -76,9 +80,25 @@ public class ReceiptActivity extends AppCompatActivity{
             }
         });
 
+
         setStatusBarColor();
         setSaveButton();
         setDateEditBox();
+    }
+
+    private void setReceipt(){
+        m_rcptDataSource = new ReceiptDataSource(this);
+        Intent intent = getIntent();
+        long rcptId = intent.getLongExtra("ReceiptID",-1);
+
+    }
+
+    public void onCameraClick(View view){
+        Intent myIntent = new Intent(this, ReceiptImageActivity.class);
+        //myIntent.putExtra("TripID", trip.getPrimaryKey()); //Optional parameters
+        //myIntent.putExtra("TripName", trip.getName());
+        startActivity(myIntent);
+
     }
 
     private void setDateEditBox(){

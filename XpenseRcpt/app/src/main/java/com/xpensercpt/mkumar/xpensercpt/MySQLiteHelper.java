@@ -67,19 +67,20 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
         insertReceipt(db, japanTripId,8391.0f, "JPY","Lunch",2,"08-19-2015","1");
 
         // create trip directory
-        RcptHelper.createTripDirectory(m_context, (int)parisTripId);
-        RcptHelper.createTripDirectory(m_context, (int)japanTripId);
+        RcptHelper.createTripDirectory(m_context, (int) parisTripId);
+        RcptHelper.createTripDirectory(m_context, (int) japanTripId);
 
         // now move 5 images to their right place
-        copyImgToApp("" + parisTripId, "1.1", R.drawable.r1_1);
-        copyImgToApp("" + parisTripId, "2.1", R.drawable.r2_1);
-        copyImgToApp("" + parisTripId, "3.1", R.drawable.r3_1);
-        copyImgToApp("" + japanTripId, "4.1", R.drawable.r4_1);
-        copyImgToApp("" + japanTripId, "5.1", R.drawable.r5_1);
+        copyImgToApp("1", "1_1.jpg", R.drawable.r1_1);
+        copyImgToApp("1", "2_1.jpg", R.drawable.r2_1);
+        copyImgToApp("1", "3_1.jpg", R.drawable.r3_1);
+        copyImgToApp("2", "4_1.jpg", R.drawable.r4_1);
+        copyImgToApp("2", "5_1.jpg", R.drawable.r5_1);
     }
 
     private void copyImgToApp(String tripId, String rcptName, int resourceId){
-        File file = new File(m_context.getExternalFilesDir(null) + "/" + tripId, rcptName);
+        File dir = m_context.getDir(tripId,0);
+        File file = new File(dir, rcptName);
         try {
             // Very simple code to copy a picture from the application's
             // resource into the external file.  Note that this code does

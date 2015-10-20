@@ -124,7 +124,7 @@ public class TripsActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent myIntent = new Intent(TripsActivity.this, ReceiptActivity.class);
-                //myIntent.putExtra("key", value); //Optional parameters
+                myIntent.putExtra("ReceiptID", -1);
                 TripsActivity.this.startActivity(myIntent);
             }
         });
