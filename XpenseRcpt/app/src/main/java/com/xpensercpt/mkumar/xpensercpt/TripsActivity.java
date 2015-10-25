@@ -113,6 +113,7 @@ public class TripsActivity extends AppCompatActivity {
                 // launch intent tripsactivity
                 Intent myIntent = new Intent(TripsActivity.this, ReceiptActivity.class);
                 myIntent.putExtra("ReceiptID", rcpt.getPrimaryKey()); //Optional parameters
+                myIntent.putExtra("TripID",rcpt.getTripKey());
                 TripsActivity.this.startActivity(myIntent);
             }
         });
@@ -125,6 +126,7 @@ public class TripsActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent myIntent = new Intent(TripsActivity.this, ReceiptActivity.class);
                 myIntent.putExtra("ReceiptID", -1);
+                myIntent.putExtra("TripID",m_trip.getPrimaryKey());
                 TripsActivity.this.startActivity(myIntent);
             }
         });

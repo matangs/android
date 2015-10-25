@@ -77,6 +77,15 @@ public class ReceiptDataSource {
         return rcpts;
     }
 
+    public Receipt getReceipt(int rcptId) {
+        Cursor cursor = database.query(Receipt.TABLE_RECEIPTS,
+                allColumns, "_id = ?", new String[] {"" + rcptId} , null, null, null);
+        cursor.moveToFirst();
+        if (cursor.isAfterLast())
+            return null;
+        return cursorToReceipt(cursor);
+    }
+
     private Receipt cursorToReceipt(Cursor cursor) {
         Receipt rcpt = new Receipt();
         rcpt.setPrimaryKey(cursor.getLong(0));

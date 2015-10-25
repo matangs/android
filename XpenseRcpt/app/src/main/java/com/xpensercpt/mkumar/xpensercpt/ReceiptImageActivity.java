@@ -6,6 +6,8 @@ import android.content.ContextWrapper;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -52,16 +54,28 @@ public class ReceiptImageActivity extends AppCompatActivity {
         //test();
         setRotate();
 
-        File imgFile = new File(this.getApplicationContext().getDir("1",0), "2_1.jpg");
-        if(imgFile.exists()){
-            String str = imgFile.getAbsolutePath();
-
-            Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-
+        Intent intent = getIntent();
+        Bundle extras = intent.getExtras();
+        Bitmap imageBitmap = (Bitmap) extras.get("data");
+        if (imageBitmap != null){
             ImageView rcptImage = (ImageView)findViewById(R.id.imageViewRcptDetail);
-            rcptImage.setImageBitmap(myBitmap);
-
+            rcptImage.setImageBitmap(imageBitmap);
         }
+        else{
+
+            File imgFile = new File(this.getApplicationContext().getDir("1",0), "2_1.jpg");
+            if(imgFile.exists()){
+                String str = imgFile.getAbsolutePath();
+
+                Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+
+                ImageView rcptImage = (ImageView)findViewById(R.id.imageViewRcptDetail);
+                rcptImage.setImageBitmap(myBitmap);
+
+            }
+        }
+
+
     }
 
     private void setRotate(){
@@ -70,14 +84,25 @@ public class ReceiptImageActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 ImageView rcptImage = (ImageView)findViewById(R.id.imageViewRcptDetail);
-                float angle = rcptImage.getRotation();
+                rcptImage.setImageBitmap(RotateBitmap(((BitmapDrawable)rcptImage.getDrawable()).getBitmap(),90));
+
+                /*float angle = rcptImage.getRotation();
                 if (angle < 270)
                     angle = angle + 90;
                 else
                     angle = 0;
                 rcptImage.setRotation(angle);
+                */
                 }
         });
+    }
+
+    public static Bitmap RotateBitmap(Bitmap source, float angle)
+    {
+        //Bitmap source = BitmapFactory.decodeResource(this.getResources(), R.drawable.your_img);
+        Matrix matrix = new Matrix();
+        matrix.postRotate(angle);
+        return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
     }
 
     @TargetApi(21)

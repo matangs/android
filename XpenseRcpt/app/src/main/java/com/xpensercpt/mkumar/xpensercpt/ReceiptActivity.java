@@ -5,14 +5,28 @@ import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Rect;
+import android.graphics.pdf.PdfDocument;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.print.PrintAttributes;
+import android.print.pdf.PrintedPdfDocument;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDialogFragment;
 import android.support.v7.widget.Toolbar;
@@ -25,14 +39,33 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
+import org.w3c.dom.Text;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 
 public class ReceiptActivity extends AppCompatActivity{
 
     private ReceiptDataSource m_rcptDataSource;
     private Receipt m_rcpt;
+    private Receipt m_origRcpt;
+    private long m_tripId;
+    private ReceiptImage m_receiptImageHelper;
+    private ArrayList<String> m_deletedImageArr;
+    private ArrayList<String> m_currencyShortName;
+    private ArrayList<String> m_expenseType;
+    private int[] m_typeOrder;
 
     public static class MyDatePickerFragment extends AppCompatDialogFragment
             implements DatePickerDialog.OnDateSetListener {
@@ -80,25 +113,191 @@ public class ReceiptActivity extends AppCompatActivity{
             }
         });
 
+        m_deletedImageArr = new ArrayList<>();
+        m_receiptImageHelper = new ReceiptImage();
 
+        Resources res = getResources();
+        m_currencyShortName = new ArrayList<>(Arrays.asList(res.getStringArray(R.array.currency_short_name_arr)));
+        m_expenseType = new ArrayList<>(Arrays.asList(res.getStringArray(R.array.expense_type_array)));
+        m_typeOrder = res.getIntArray(R.array.expense_type_array_order);
+
+        /*SharedPreferences preferences = this.getSharedPreferences("MyPreferences", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putInt("var1", myvar);
+        editor.commit();*/
+
+
+        setReceipt();
         setStatusBarColor();
         setSaveButton();
         setDateEditBox();
+        setupDefData();
+    }
+
+    private void setupDefData(){
+        int currencyIndex;
+        int expenseTypeIndex;
+        String rcptDate;
+        float amount = 0;
+        String comment = null;
+
+        if (m_rcpt == null){
+            SharedPreferences preferences = this.getSharedPreferences("MyPreferences", Context.MODE_PRIVATE);
+            m_origRcpt = null;
+            currencyIndex = preferences.getInt("ReceiptCurrency",0);
+            expenseTypeIndex = preferences.getInt("ExpenseType",0);
+            rcptDate = preferences.getString("DefaultReceiptDate", "");
+        } else{
+            m_origRcpt = new Receipt();
+            m_origRcpt.transferData(m_rcpt);
+
+            expenseTypeIndex = m_expenseType.indexOf(m_rcpt.getExpenseType());
+            currencyIndex = m_currencyShortName.indexOf(m_rcpt.getCurrency());
+            rcptDate = m_rcpt.getDate();
+            amount = m_rcpt.getAmount();
+            comment = m_rcpt.getComment();
+
+            m_receiptImageHelper.load(m_rcpt.getphoto(), m_rcpt);
+        }
+
+        TextView amountTextView = (TextView)this.findViewById(R.id.editTextRcptAmount);
+        amountTextView.setText("" + amount);
+
+        EditText dateText = (EditText) this.findViewById(R.id.editTextRcptDate);
+        dateText.setText(rcptDate);
+
+        Spinner expenseTypeSpinner = (Spinner) this.findViewById(R.id.spinnerExpenseType);
+        expenseTypeSpinner.setSelection(expenseTypeIndex);
+
+        Spinner currencyTypeSpinner = (Spinner) this.findViewById(R.id.spinnerCurrencyName);
+        currencyTypeSpinner.setSelection(currencyIndex);
+
+        if (comment != null && !comment.isEmpty()) {
+            EditText commentEditText = (EditText) this.findViewById(R.id.editTextRcptNote);
+            commentEditText.setText(comment);
+        }
+
+
+
     }
 
     private void setReceipt(){
         m_rcptDataSource = new ReceiptDataSource(this);
         Intent intent = getIntent();
         long rcptId = intent.getLongExtra("ReceiptID",-1);
+        m_tripId = intent.getLongExtra("TripID",-1);
+        if (rcptId != -1){
+            m_rcptDataSource.open();
+            m_rcpt = m_rcptDataSource.getReceipt((int)rcptId);
+            m_rcptDataSource.close();
+        }
 
     }
 
     public void onCameraClick(View view){
-        Intent myIntent = new Intent(this, ReceiptImageActivity.class);
-        //myIntent.putExtra("TripID", trip.getPrimaryKey()); //Optional parameters
-        //myIntent.putExtra("TripName", trip.getName());
-        startActivity(myIntent);
+        printPDF();
+        //dispatchTakePictureIntent();
+        //dispatchSelectPictureIntent();
+        //return;
 
+        //Intent myIntent = new Intent(this, ReceiptImageActivity.class);
+        //startActivity(myIntent);
+
+    }
+
+/*
+    static final int REQUEST_IMAGE_CAPTURE = 1;
+
+    private void dispatchTakePictureIntent() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+            Bundle extras = data.getExtras();
+            Bitmap imageBitmap = (Bitmap) extras.get("data");
+
+            Intent myIntent = new Intent(this, ReceiptImageActivity.class);
+            myIntent.putExtra("data",imageBitmap);
+            startActivity(myIntent);
+            //mImageView.setImageBitmap(imageBitmap);
+        }
+    }
+*/
+
+
+    protected static final int REQUEST_PICK_IMAGE = 1;
+    protected static final int REQUEST_PICK_CROP_IMAGE = 2;
+    private static final int SELECT_PHOTO = 100;
+    private void dispatchSelectPictureIntent(){
+        Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
+        photoPickerIntent.setType("image/*");
+        startActivityForResult(photoPickerIntent, SELECT_PHOTO);
+    }
+
+    /*
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
+        super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
+
+        switch(requestCode) {
+            case SELECT_PHOTO:
+                if(resultCode == RESULT_OK){
+                    Uri selectedImage = imageReturnedIntent.getData();
+                    try {
+                        InputStream imageStream = getContentResolver().openInputStream(selectedImage);
+                        Bitmap yourSelectedImage = BitmapFactory.decodeStream(imageStream);
+                        Intent myIntent = new Intent(this, ReceiptImageActivity.class);
+                        myIntent.putExtra("data",yourSelectedImage);
+                        startActivity(myIntent);
+                    }
+                    catch (FileNotFoundException ex){
+
+                    }
+                }
+        }
+    }
+    */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        super.onActivityResult(requestCode, resultCode, intent);
+        switch (requestCode) {
+
+            case SELECT_PHOTO:
+                if (RESULT_OK == resultCode) {
+                    Uri imageUri = intent.getData();
+                    Bitmap bitmap;
+                    try {
+
+                        bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
+                        //bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), imageUri);
+
+                        Intent myIntent = new Intent(this, ReceiptImageActivity.class);
+                        myIntent.putExtra("data", bitmap);
+                        startActivity(myIntent);
+
+                        //mImageView.setImageBitmap(bitmap);
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+
+                }
+                break;
+            case REQUEST_PICK_CROP_IMAGE:
+                Bitmap selectedImage = BitmapFactory.decodeFile(Environment
+                        .getExternalStorageDirectory() + "/temp.jpg");
+                Intent myIntent = new Intent(this, ReceiptImageActivity.class);
+                myIntent.putExtra("data",selectedImage);
+                startActivity(myIntent);
+
+                //mImageView.setImageBitmap(selectedImage);
+                break;
+        }
     }
 
     private void setDateEditBox(){
@@ -197,5 +396,77 @@ public class ReceiptActivity extends AppCompatActivity{
         return super.onOptionsItemSelected(item);
     }
 
+    private Intent mShareIntent;
+    private OutputStream os;
+    public void printPDF() {
+
+        // Create a shiny new (but blank) PDF document in memory
+        // We want it to optionally be printable, so add PrintAttributes
+        // and use a PrintedPdfDocument. Simpler: new PdfDocument().
+        PrintAttributes printAttrs = new PrintAttributes.Builder().
+                setColorMode(PrintAttributes.COLOR_MODE_MONOCHROME).//.COLOR_MODE_COLOR).
+                setMediaSize(PrintAttributes.MediaSize.NA_LETTER).
+                setResolution(new PrintAttributes.Resolution("zooey", PRINT_SERVICE, 300, 300)).
+                setMinMargins(PrintAttributes.Margins.NO_MARGINS).
+                build();
+        PdfDocument document = new PrintedPdfDocument(this, printAttrs);
+
+        // crate a page description
+        PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(300, 300, 1).create();
+
+        // create a new page from the PageInfo
+        PdfDocument.Page page = document.startPage(pageInfo);
+
+        // repaint the user's text into the page
+        //View content = findViewById(R.id.textArea);
+        //content.draw(page.getCanvas());
+
+        File imgFile = new File(this.getApplicationContext().getDir("1",0), "2_1.jpg");
+        if(imgFile.exists()){
+            String str = imgFile.getAbsolutePath();
+
+            Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+            Canvas canvas = page.getCanvas();
+            canvas.drawBitmap(myBitmap,null,new Rect(10,10,300,300), null);
+        }
+
+
+        // do final processing of the page
+        document.finishPage(page);
+
+        // Here you could add more pages in a longer doc app, but you'd have
+        // to handle page-breaking yourself in e.g., write your own word processor...
+
+        // Now write the PDF document to a file; it actually needs to be a file
+        // since the Share mechanism can't accept a byte[]. though it can
+        // accept a String/CharSequence. Meh.
+        try {
+            File pdfDirPath = new File(getFilesDir(), "pdfs");
+            if (pdfDirPath.mkdirs()) {
+                File file = new File(pdfDirPath, "pdfsend.pdf");
+                Uri contentUri = FileProvider.getUriForFile(this, "com.xpensercpt.fileprovider", file);
+                os = new FileOutputStream(file);
+                document.writeTo(os);
+                document.close();
+                os.close();
+
+                shareDocument(contentUri);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Error generating file", e);
+        }
+    }
+
+    private void shareDocument(Uri uri) {
+        mShareIntent = new Intent();
+        mShareIntent.setAction(Intent.ACTION_SEND);
+        mShareIntent.setType("application/pdf");
+        // Assuming it may go via eMail:
+        mShareIntent.putExtra(Intent.EXTRA_SUBJECT, "Here is a PDF from PdfSend");
+        // Attach the PDf as a Uri, since Android can't take it as bytes yet.
+        mShareIntent.putExtra(Intent.EXTRA_STREAM, uri);
+        startActivity(mShareIntent);
+
+    }
 
 }
