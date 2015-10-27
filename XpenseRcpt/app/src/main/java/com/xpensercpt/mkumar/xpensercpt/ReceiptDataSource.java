@@ -43,6 +43,10 @@ public class ReceiptDataSource {
         dbHelper.close();
     }
 
+    public long insertReceipt(Receipt rcpt){
+        return insertReceipt(rcpt.getTripKey(), rcpt.getAmount(), rcpt.getCurrency(), rcpt.getExpenseType(), (int)rcpt.getExpenseTypeOrder(), rcpt.getDate(), rcpt.getphoto(), rcpt.getComment());
+    }
+
     public long insertReceipt(long trip_id, float amount, String currency, String type, int type_order, String date, String photo, String comment){
         ContentValues values = new ContentValues();
         values.put(Receipt.COLUMN_TRIP_ID, trip_id);
@@ -52,8 +56,11 @@ public class ReceiptDataSource {
         values.put(Receipt.COLUMN_TYPE_ORDER,type_order);
         values.put(Receipt.COLUMN_DATE,date);
         values.put(Receipt.COLUMN_PHOTO,photo);
-        if (comment != null)
+        if (comment != null && comment.length() > 0)
             values.put(Receipt.COLUMN_COMMENT, comment);
+        else
+            values.putNull(Receipt.COLUMN_COMMENT);
+
 
         return database.insert(Receipt.TABLE_RECEIPTS, null, values);
     }

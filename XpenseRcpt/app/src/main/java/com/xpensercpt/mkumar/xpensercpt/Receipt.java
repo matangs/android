@@ -2,7 +2,12 @@ package com.xpensercpt.mkumar.xpensercpt;
 
 import android.database.sqlite.SQLiteDatabase;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Log;
+import android.widget.ImageView;
+
+import java.io.File;
 
 /**
  * Created by mkumar on 10/9/15.
@@ -135,7 +140,11 @@ public class Receipt {
     }
 
     String imagePath(String imgId){
-        return m_primaryKey + "." + imgId + ".jpg";
+        return m_primaryKey + "_" + imgId + ".jpg";
+    }
+
+    File imageFile(String imgId, Context ctxt){
+        return new File(ctxt.getDir("" + m_tripKey,0), imagePath(imgId));
     }
 
     boolean isSame(Receipt rcpt) {

@@ -36,12 +36,20 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.AbsListView;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
+
+import com.xpensercpt.mkumar.xpensercpt.swipe.SwipeToDismissTouchListener;
+import com.xpensercpt.mkumar.xpensercpt.swipe.adapter.ListViewAdapter;
+
+import junit.framework.Assert;
 
 import org.w3c.dom.Text;
 
@@ -66,6 +74,8 @@ public class ReceiptActivity extends AppCompatActivity{
     private ArrayList<String> m_currencyShortName;
     private ArrayList<String> m_expenseType;
     private int[] m_typeOrder;
+    private boolean m_isUpdating;
+    private ReceiptImageAdapter m_imageAdapter;
 
     public static class MyDatePickerFragment extends AppCompatDialogFragment
             implements DatePickerDialog.OnDateSetListener {
@@ -129,9 +139,68 @@ public class ReceiptActivity extends AppCompatActivity{
 
         setReceipt();
         setStatusBarColor();
-        setSaveButton();
+        //setSaveButton();
+        setupSaveButton();
         setDateEditBox();
         setupDefData();
+        addImageListView();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        int prevCount = m_receiptImageHelper.getImageDataArr().size();
+
+        setReceipt();
+
+        int newCount = m_receiptImageHelper.getImageDataArr().size();
+        if (newCount > prevCount) {
+            m_imageAdapter.notifyDataSetChanged();
+        }
+    }
+
+    private void addImageListView(){
+        m_imageAdapter = new ReceiptImageAdapter(this,R.layout.receipt_image_row_item,m_receiptImageHelper.getImageDataArr());
+        ListView listView = (ListView)findViewById(R.id.rcpt_images_list);
+        listView.setAdapter(m_imageAdapter);
+
+
+        final SwipeToDismissTouchListener<ListViewAdapter> touchListener =
+                new SwipeToDismissTouchListener<>(
+                        new ListViewAdapter(listView),
+                        new SwipeToDismissTouchListener.DismissCallbacks<ListViewAdapter>() {
+                            @Override
+                            public boolean canDismiss(int position) {
+                                return true;
+                            }
+
+                            @Override
+                            public void onDismiss(ListViewAdapter view, int position) {
+                                m_imageAdapter.remove(m_receiptImageHelper.getImageDataArr().get(position));
+                            }
+                        });
+        listView.setOnTouchListener(touchListener);
+        listView.setOnScrollListener((AbsListView.OnScrollListener) touchListener.makeScrollListener());
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position,
+                                    long id) {
+
+                if (touchListener.existPendingDismisses()) {
+                    touchListener.undoPendingDismiss();
+                    return;
+                }
+                /*
+                Receipt rcpt = m_trip.getReceipts().get(position);
+                // launch intent tripsactivity
+                Intent myIntent = new Intent(TripsActivity.this, ReceiptActivity.class);
+                myIntent.putExtra("ReceiptID", rcpt.getPrimaryKey()); //Optional parameters
+                myIntent.putExtra("TripID", rcpt.getTripKey());
+                TripsActivity.this.startActivity(myIntent);
+                */
+            }
+        });
     }
 
     private void setupDefData(){
@@ -143,13 +212,10 @@ public class ReceiptActivity extends AppCompatActivity{
 
         if (m_rcpt == null){
             SharedPreferences preferences = this.getSharedPreferences("MyPreferences", Context.MODE_PRIVATE);
-            m_origRcpt = null;
             currencyIndex = preferences.getInt("ReceiptCurrency",0);
             expenseTypeIndex = preferences.getInt("ExpenseType",0);
             rcptDate = preferences.getString("DefaultReceiptDate", "");
         } else{
-            m_origRcpt = new Receipt();
-            m_origRcpt.transferData(m_rcpt);
 
             expenseTypeIndex = m_expenseType.indexOf(m_rcpt.getExpenseType());
             currencyIndex = m_currencyShortName.indexOf(m_rcpt.getCurrency());
@@ -157,7 +223,6 @@ public class ReceiptActivity extends AppCompatActivity{
             amount = m_rcpt.getAmount();
             comment = m_rcpt.getComment();
 
-            m_receiptImageHelper.load(m_rcpt.getphoto(), m_rcpt);
         }
 
         TextView amountTextView = (TextView)this.findViewById(R.id.editTextRcptAmount);
@@ -176,9 +241,117 @@ public class ReceiptActivity extends AppCompatActivity{
             EditText commentEditText = (EditText) this.findViewById(R.id.editTextRcptNote);
             commentEditText.setText(comment);
         }
+    }
+
+    private void setupSaveButton(){
+        Button saveButton = (Button) findViewById(R.id.saveRcptButton);
+        saveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                TextView amountTextView = (TextView) ReceiptActivity.this.findViewById(R.id.editTextRcptAmount);
+                String amount = amountTextView.getText().toString();
+
+                if (amount.isEmpty() || m_receiptImageHelper.getImageDataArr().size() < 1) {
+                    new AlertDialog.Builder(ReceiptActivity.this)
+                            .setTitle("Data missing")
+                            .setMessage("You must select amount and a photo to save the receipt")
+                            .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // continue with delete
+                                }
+                            })
+                            .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // do nothing
+                                }
+                            })
+                            .setIcon(android.R.drawable.ic_dialog_alert)
+                            .show();
+                    return;
+                }
 
 
+                saveReceipt();
+                //[[self navigationController] popViewControllerAnimated:YES];
 
+            }
+        });
+    }
+
+    private void saveReceipt(){
+        updateReceipt();
+        if (m_isUpdating)
+            m_rcptDataSource.updateReceipt(m_rcpt);
+        else
+            m_rcptDataSource.insertReceipt(m_rcpt);
+
+        saveImagesToAppFolder();
+
+        finish();
+    }
+
+    private void saveImagesToAppFolder(){
+
+        for (String imgId :
+                m_deletedImageArr) {
+            File imgFile = m_rcpt.imageFile(imgId, this.getApplicationContext());
+            if (imgFile.exists()) {
+                boolean deleted = imgFile.delete();
+                Assert.assertEquals(deleted, true);
+            }
+        }
+
+        for (ReceiptImage.ReceiptImageData data :
+                m_receiptImageHelper.getImageDataArr()) {
+            if (!data.isNew())
+                continue;
+            File imgFile = m_rcpt.imageFile(data.getId() + "", this.getApplicationContext());
+            if (imgFile.exists()) {
+                boolean deleted = imgFile.delete();
+                Assert.assertEquals(deleted, true);
+            }
+
+            // TODO: save image file on the disk at this point.
+            //NSData *imageData = UIImageJPEGRepresentation(data.m_image, 0.3);
+            //[imageData writeToFile:destinationPath atomically:true];
+
+
+        }
+    }
+
+    private void updateReceipt(){
+        if (m_rcpt == null){
+            m_rcpt = new Receipt();
+        }
+        m_rcpt.setTripKey(m_tripId);
+
+        TextView amountTextView = (TextView)this.findViewById(R.id.editTextRcptAmount);
+        float amount = Float.parseFloat(amountTextView.getText().toString());
+        m_rcpt.setAmount(amount);
+
+
+        EditText dateText = (EditText) this.findViewById(R.id.editTextRcptDate);
+        String date = dateText.getText().toString();
+        m_rcpt.setDate(date);
+
+        Spinner expenseTypeSpinner = (Spinner) this.findViewById(R.id.spinnerExpenseType);
+        String expenseType = (String)expenseTypeSpinner.getSelectedItem();
+        int expenseTypeOrder = m_typeOrder[expenseTypeSpinner.getSelectedItemPosition()];
+        m_rcpt.setExpenseType(expenseType);
+        m_rcpt.setExpenseTypeOrder(expenseTypeOrder);
+
+        Spinner currencyTypeSpinner = (Spinner) this.findViewById(R.id.spinnerCurrencyName);
+        int selIndex = currencyTypeSpinner.getSelectedItemPosition();
+        m_rcpt.setCurrency(m_currencyShortName.get(selIndex));
+
+        EditText commentEditText = (EditText) this.findViewById(R.id.editTextRcptNote);
+        String comment = commentEditText.getText().toString();
+        if (comment.isEmpty())
+            m_rcpt.setComment("");
+        else
+            m_rcpt.setComment(comment);
+
+        m_rcpt.setPhoto(m_receiptImageHelper.getPhotoStr());
     }
 
     private void setReceipt(){
@@ -186,11 +359,19 @@ public class ReceiptActivity extends AppCompatActivity{
         Intent intent = getIntent();
         long rcptId = intent.getLongExtra("ReceiptID",-1);
         m_tripId = intent.getLongExtra("TripID",-1);
+        m_origRcpt = null;
         if (rcptId != -1){
             m_rcptDataSource.open();
             m_rcpt = m_rcptDataSource.getReceipt((int)rcptId);
             m_rcptDataSource.close();
+
+            m_origRcpt = new Receipt();
+            m_origRcpt.transferData(m_rcpt);
+            m_isUpdating = true;
+            m_receiptImageHelper.load(m_rcpt.getphoto(), m_rcpt, this.getApplicationContext());
         }
+        else
+            m_isUpdating = false;
 
     }
 

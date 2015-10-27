@@ -1,5 +1,10 @@
 package com.xpensercpt.mkumar.xpensercpt;
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+
+import java.io.File;
 import java.util.ArrayList;
 
 /**
@@ -8,11 +13,22 @@ import java.util.ArrayList;
  */
 public class ReceiptImage {
 
-    class ReceiptImageData{
-        /*private UIImage m_image;
-        */
+    public class ReceiptImageData{
+        private Bitmap m_image;
         private boolean m_isNew;
         private int m_id;
+
+        public int getId(){
+            return m_id;
+        }
+
+        public boolean isNew(){
+            return m_isNew;
+        }
+
+        public Bitmap getImage(){
+            return m_image;
+        }
 
     }
 
@@ -31,49 +47,47 @@ public class ReceiptImage {
         return m_nextId;
     }
 
-    public void load(String photoStr, Receipt theReceipt) {
+    public void load(String photoStr, Receipt theReceipt, Context ctxt) {
+        m_imageDataArr.clear();
+
         String[] arr = photoStr.split(",");
 
         for (String indexStr :
                 arr) {
 
-            ReceiptImageData data = new ReceiptImageData();
-
-            /* load image once you have figured out
-
-            String imgPath = theReceipt.imagePath(indexStr);
-
-            UIImage* img = [UIImage imageWithContentsOfFile:imgPath];
-            UIImageOrientation orientation = img.imageOrientation;
-            if (orientation != UIImageOrientationUp){
-                data.m_image = [UIImage imageWithCGImage:[img CGImage]
-                scale:1.0
-                orientation: UIImageOrientationUp];
+            Bitmap myBitmap = null;
+            File imgFile = theReceipt.imageFile(indexStr,ctxt);
+            if(imgFile.exists()) {
+                String str = imgFile.getAbsolutePath();
+                myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
             }
-            else
-                data.m_image = img;
-               */
+            if (myBitmap == null)
+                continue;
 
+            ReceiptImageData data = new ReceiptImageData();
             data.m_isNew = false;
             data.m_id =  Integer.parseInt(indexStr);
+            data.m_image = myBitmap;
             m_imageDataArr.add(data);
             m_nextId = data.m_id + 1;
         }
 
     }
 
-    public void addNewImage(/*UIImage image*/){
+    public void addNewImage(Bitmap image){
         ReceiptImageData data = new ReceiptImageData();
 
-        //data.m_image = image;
+        data.m_image = image;
         data.m_isNew = true;
         data.m_id = m_nextId;
         m_imageDataArr.add(data);
         m_nextId++;
     }
 
-    public void deleteImageAt(int index){
+    public boolean deleteImageAt(Receipt theReceipt, Context ctxt, int index) {
         m_imageDataArr.remove(index);
+        File imgFile = theReceipt.imageFile(index + "", ctxt);
+        return imgFile.exists() && imgFile.delete();
     }
 
     public String getPhotoStr(){
