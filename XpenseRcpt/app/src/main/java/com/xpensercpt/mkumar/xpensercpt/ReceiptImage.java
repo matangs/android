@@ -17,6 +17,7 @@ public class ReceiptImage {
         private Bitmap m_image;
         private boolean m_isNew;
         private int m_id;
+        private String m_absPath;
 
         public int getId(){
             return m_id;
@@ -28,6 +29,10 @@ public class ReceiptImage {
 
         public Bitmap getImage(){
             return m_image;
+        }
+
+        public String getAbsPath(){
+            return m_absPath;
         }
 
     }
@@ -57,8 +62,7 @@ public class ReceiptImage {
 
             Bitmap myBitmap = null;
             File imgFile = theReceipt.imageFile(indexStr,ctxt);
-            if(imgFile.exists()) {
-                String str = imgFile.getAbsolutePath();
+            if (imgFile.exists()) {
                 myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
             }
             if (myBitmap == null)
@@ -68,18 +72,20 @@ public class ReceiptImage {
             data.m_isNew = false;
             data.m_id =  Integer.parseInt(indexStr);
             data.m_image = myBitmap;
+            data.m_absPath = imgFile.getAbsolutePath();
             m_imageDataArr.add(data);
             m_nextId = data.m_id + 1;
         }
 
     }
 
-    public void addNewImage(Bitmap image){
+    public void addNewImage(Bitmap image, String absPath){
         ReceiptImageData data = new ReceiptImageData();
 
         data.m_image = image;
         data.m_isNew = true;
         data.m_id = m_nextId;
+        data.m_absPath = absPath;
         m_imageDataArr.add(data);
         m_nextId++;
     }

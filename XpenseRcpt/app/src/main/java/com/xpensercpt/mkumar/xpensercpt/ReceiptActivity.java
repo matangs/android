@@ -191,14 +191,12 @@ public class ReceiptActivity extends AppCompatActivity{
                     touchListener.undoPendingDismiss();
                     return;
                 }
-                /*
-                Receipt rcpt = m_trip.getReceipts().get(position);
-                // launch intent tripsactivity
-                Intent myIntent = new Intent(TripsActivity.this, ReceiptActivity.class);
-                myIntent.putExtra("ReceiptID", rcpt.getPrimaryKey()); //Optional parameters
-                myIntent.putExtra("TripID", rcpt.getTripKey());
-                TripsActivity.this.startActivity(myIntent);
-                */
+
+
+                String absPath = ReceiptActivity.this.m_receiptImageHelper.getImageDataArr().get(position).getAbsPath();
+                Intent myIntent = new Intent(ReceiptActivity.this, ReceiptImageActivity.class);
+                myIntent.putExtra("ABS_PATH",absPath);
+                startActivity(myIntent);
             }
         });
     }
@@ -376,8 +374,8 @@ public class ReceiptActivity extends AppCompatActivity{
     }
 
     public void onCameraClick(View view){
-        printPDF();
-        //dispatchTakePictureIntent();
+        //printPDF();
+        dispatchTakePictureIntent();
         //dispatchSelectPictureIntent();
         //return;
 
@@ -386,7 +384,7 @@ public class ReceiptActivity extends AppCompatActivity{
 
     }
 
-/*
+
     static final int REQUEST_IMAGE_CAPTURE = 1;
 
     private void dispatchTakePictureIntent() {
@@ -400,17 +398,25 @@ public class ReceiptActivity extends AppCompatActivity{
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
             Bundle extras = data.getExtras();
+
+            // TODO: after taking a picture - save it in the temp directory and use it's bmp in the ReceiptActivity
+            String absPath = ReceiptActivity.this.m_receiptImageHelper.getImageDataArr().get(0).getAbsPath();
+            Bitmap imageBitmap = BitmapFactory.decodeFile(absPath);
+            m_receiptImageHelper.addNewImage(imageBitmap, absPath);
+            m_imageAdapter.notifyDataSetChanged();
+
+            /*
             Bitmap imageBitmap = (Bitmap) extras.get("data");
 
             Intent myIntent = new Intent(this, ReceiptImageActivity.class);
             myIntent.putExtra("data",imageBitmap);
             startActivity(myIntent);
-            //mImageView.setImageBitmap(imageBitmap);
+            */
         }
     }
-*/
 
 
+/*
     protected static final int REQUEST_PICK_IMAGE = 1;
     protected static final int REQUEST_PICK_CROP_IMAGE = 2;
     private static final int SELECT_PHOTO = 100;
@@ -420,7 +426,7 @@ public class ReceiptActivity extends AppCompatActivity{
         startActivityForResult(photoPickerIntent, SELECT_PHOTO);
     }
 
-    /*
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
         super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
@@ -442,7 +448,7 @@ public class ReceiptActivity extends AppCompatActivity{
                 }
         }
     }
-    */
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
@@ -480,7 +486,7 @@ public class ReceiptActivity extends AppCompatActivity{
                 break;
         }
     }
-
+*/
     private void setDateEditBox(){
         EditText myEditText = (EditText) findViewById(R.id.editTextRcptDate);
 

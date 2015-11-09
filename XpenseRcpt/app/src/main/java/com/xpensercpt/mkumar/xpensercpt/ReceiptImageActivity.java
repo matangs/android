@@ -56,7 +56,25 @@ public class ReceiptImageActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
-        Bitmap imageBitmap = (Bitmap) extras.get("data");
+        Bitmap imageBitmap = null;
+
+        if (getIntent().hasExtra("ABS_PATH")){
+            String path = getIntent().getStringExtra("ABS_PATH");
+            imageBitmap = BitmapFactory.decodeFile(path);
+        }
+
+        if (imageBitmap == null && getIntent().hasExtra("data"))
+            imageBitmap = (Bitmap) extras.get("data");
+        else if (getIntent().hasExtra("Image"))
+            imageBitmap = (Bitmap) extras.get("Image");
+
+        if (imageBitmap == null){
+            if(getIntent().hasExtra("byteArray")) {
+                imageBitmap = BitmapFactory.decodeByteArray(
+                        getIntent().getByteArrayExtra("byteArray"),0,getIntent().getByteArrayExtra("byteArray").length);
+            }
+        }
+
         if (imageBitmap != null){
             ImageView rcptImage = (ImageView)findViewById(R.id.imageViewRcptDetail);
             rcptImage.setImageBitmap(imageBitmap);
