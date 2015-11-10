@@ -143,7 +143,7 @@ public class ReceiptActivity extends AppCompatActivity{
         setupSaveButton();
         setDateEditBox();
         setupDefData();
-        addImageListView();
+        //addImageListView();
     }
 
     @Override
@@ -158,7 +158,7 @@ public class ReceiptActivity extends AppCompatActivity{
             m_imageAdapter.notifyDataSetChanged();
         }
     }
-
+/*
     private void addImageListView(){
         m_imageAdapter = new ReceiptImageAdapter(this,R.layout.receipt_image_row_item,m_receiptImageHelper.getImageDataArr());
         ListView listView = (ListView)findViewById(R.id.rcpt_images_list);
@@ -200,7 +200,7 @@ public class ReceiptActivity extends AppCompatActivity{
             }
         });
     }
-
+*/
     private void setupDefData(){
         int currencyIndex;
         int expenseTypeIndex;
