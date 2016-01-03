@@ -13,6 +13,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.pdf.PdfDocument;
 import android.net.Uri;
@@ -34,6 +35,7 @@ import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AbsListView;
@@ -41,7 +43,9 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -144,6 +148,7 @@ public class ReceiptActivity extends AppCompatActivity{
         setDateEditBox();
         setupDefData();
         //addImageListView();
+        addImageLayouts();
     }
 
     @Override
@@ -157,6 +162,63 @@ public class ReceiptActivity extends AppCompatActivity{
         if (newCount > prevCount) {
             m_imageAdapter.notifyDataSetChanged();
         }
+    }
+
+    private void addImageLayouts(){
+        for (ReceiptImage.ReceiptImageData data :
+                m_receiptImageHelper.getImageDataArr()) {
+
+            LinearLayout my_root = (LinearLayout) findViewById(R.id.rcptImgContainerLayout);
+
+            LinearLayout layout = new LinearLayout(this);
+            layout.setPadding(10,10,10,10);
+            layout.setOrientation(LinearLayout.HORIZONTAL);
+
+            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
+            layout.setLayoutParams(layoutParams);
+
+            ImageButton delButton = new ImageButton(this);
+            delButton.setImageResource(android.R.drawable.ic_delete);
+            delButton.setBackgroundColor(Color.WHITE);
+            LinearLayout.LayoutParams btnParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.MATCH_PARENT);
+            delButton.setLayoutParams(btnParams);
+
+            ImageView rcptImg = new ImageView(this);
+            //rcptImg.setImageResource(android.R.drawable.ic_delete);
+            rcptImg.setImageBitmap(data.getImage());
+            LinearLayout.LayoutParams imgParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 500);
+            rcptImg.setLayoutParams(imgParams);
+            rcptImg.setScaleType(ImageView.ScaleType.FIT_CENTER);
+
+            layout.addView(delButton);
+            layout.addView(rcptImg);
+
+            my_root.addView(layout);
+
+            /*
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:id="@+id/deleteButton1"
+                android:layout_marginTop="0dp"
+                android:layout_centerHorizontal="true"
+                android:background="@android:color/white"
+                android:onClick="onCameraClick"
+                android:src="@android:drawable/ic_delete"/>
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                android:id="@+id/imageViewRcptImg1"
+                android:layout_centerVertical="true"
+                android:layout_centerHorizontal="true"
+                android:scaleType="fitCenter"
+                android:src="@drawable/r5_1" />
+
+             */
+
+        }
+
     }
 /*
     private void addImageListView(){
