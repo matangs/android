@@ -90,6 +90,23 @@ public class ReceiptImage {
         m_nextId++;
     }
 
+    public ReceiptImageData addNewImage(Bitmap bmp){
+        ReceiptImageData data = new ReceiptImageData();
+        data.m_id = m_nextId;
+        m_nextId++;
+        data.m_isNew = true;
+        //data.m_absPath = photoFile.getAbsolutePath();
+
+        data.m_image = bmp;
+        //int width = (int) (data.m_image.getWidth() * 0.25);
+        //int height = (int) (data.m_image.getHeight() * 0.25);
+        //data.m_image = Bitmap.createScaledBitmap(data.m_image, width, height, false);
+
+        m_imageDataArr.add(data);
+
+        return data;
+    }
+
     public ReceiptImageData addNewImage(File photoFile){
         ReceiptImageData data = new ReceiptImageData();
         data.m_id = m_nextId;
@@ -98,6 +115,10 @@ public class ReceiptImage {
         data.m_absPath = photoFile.getAbsolutePath();
 
         data.m_image = BitmapFactory.decodeFile(photoFile.getAbsolutePath());
+        //int width = (int) (data.m_image.getWidth() * 0.25);
+        //int height = (int) (data.m_image.getHeight() * 0.25);
+        //data.m_image = Bitmap.createScaledBitmap(data.m_image, width, height, false);
+
         m_imageDataArr.add(data);
 
         return data;

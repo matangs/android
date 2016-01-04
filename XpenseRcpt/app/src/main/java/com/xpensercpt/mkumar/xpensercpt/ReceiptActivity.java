@@ -511,16 +511,42 @@ public class ReceiptActivity extends AppCompatActivity{
                     e.printStackTrace();
                 }
             }
+            try{
+                int len = is.available();
+                byte[] b = new byte[len];
+                is.read(b);
+                Bitmap bmp = BitmapFactory.decodeByteArray(b, 0, len);
+                ReceiptImage.ReceiptImageData imgData = m_receiptImageHelper.addNewImage(bmp);
+                addImageData(imgData);
 
-            //long len = file.length();
-            ReceiptImage.ReceiptImageData imgData = m_receiptImageHelper.addNewImage(file);
-            addImageData(imgData);
+            }
+            catch (IOException ex){
+                ex.printStackTrace();
+            }
+
+            if (file.exists())
+                file.delete();
 
 
-            //Now "is" stream contains the required photo, you can process it
-            //DoSomeProcessing(is);
+/*
 
-            //don't forget to remove the temp file when it's not required.
+FileOutputStream out = null;
+try {
+    out = new FileOutputStream(filename);
+    bmp.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance
+    // PNG is a lossless format, the compression factor (100) is ignored
+} catch (Exception e) {
+    e.printStackTrace();
+} finally {
+    try {
+        if (out != null) {
+            out.close();
+        }
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+}
+ */
         }
 
     }
