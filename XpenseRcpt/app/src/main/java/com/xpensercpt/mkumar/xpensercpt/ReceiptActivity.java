@@ -4,7 +4,6 @@ import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
-import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -35,37 +34,33 @@ import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.AbsListView;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.xpensercpt.mkumar.xpensercpt.swipe.SwipeToDismissTouchListener;
-import com.xpensercpt.mkumar.xpensercpt.swipe.adapter.ListViewAdapter;
-
 import junit.framework.Assert;
 
-import org.w3c.dom.Text;
-
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ReceiptActivity extends AppCompatActivity{
 
@@ -80,6 +75,10 @@ public class ReceiptActivity extends AppCompatActivity{
     private int[] m_typeOrder;
     private boolean m_isUpdating;
     private ReceiptImageAdapter m_imageAdapter;
+    private HashMap<Integer, Integer> m_btnIdImgIndexMap;
+    private HashMap<Integer, Integer> m_imgViewIdImgIndexMap;
+    private int m_deleteImgAtIndex;
+
 
     public static class MyDatePickerFragment extends AppCompatDialogFragment
             implements DatePickerDialog.OnDateSetListener {
@@ -114,6 +113,8 @@ public class ReceiptActivity extends AppCompatActivity{
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        m_btnIdImgIndexMap = new HashMap<>();
+        m_imgViewIdImgIndexMap = new HashMap<>();
         setContentView(R.layout.activity_receipt);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -129,6 +130,8 @@ public class ReceiptActivity extends AppCompatActivity{
 
         m_deletedImageArr = new ArrayList<>();
         m_receiptImageHelper = new ReceiptImage();
+        ReceiptActivity.this.m_deleteImgAtIndex = -1;
+
 
         Resources res = getResources();
         m_currencyShortName = new ArrayList<>(Arrays.asList(res.getStringArray(R.array.currency_short_name_arr)));
@@ -164,105 +167,117 @@ public class ReceiptActivity extends AppCompatActivity{
         }
     }
 
+    private void addImageData(ReceiptImage.ReceiptImageData data){
+        LinearLayout my_root = (LinearLayout) findViewById(R.id.rcptImgContainerLayout);
+
+        LinearLayout layout = new LinearLayout(this);
+        layout.setPadding(10, 10, 10, 10);
+        layout.setOrientation(LinearLayout.HORIZONTAL);
+
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
+        layout.setLayoutParams(layoutParams);
+
+        // delete button.
+        ImageButton delButton = new ImageButton(this);
+        delButton.setImageResource(android.R.drawable.ic_delete);
+        delButton.setBackgroundColor(Color.WHITE);
+        LinearLayout.LayoutParams btnParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.MATCH_PARENT);
+        delButton.setLayoutParams(btnParams);
+        int id = View.generateViewId();
+        delButton.setId(id);
+        m_btnIdImgIndexMap.put(id, data.getId());
+        delButton.setOnClickListener(onImageDelete);
+
+        // add image.
+        ImageView rcptImg = new ImageView(this);
+        rcptImg.setImageBitmap(data.getImage());
+        LinearLayout.LayoutParams imgParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 500);
+        rcptImg.setLayoutParams(imgParams);
+        rcptImg.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        id = View.generateViewId();
+        rcptImg.setId(id);
+        m_imgViewIdImgIndexMap.put(id, data.getId());
+        rcptImg.setOnClickListener(onImageClick);
+
+        layout.addView(delButton);
+        layout.addView(rcptImg);
+
+        my_root.addView(layout);
+
+    }
+
     private void addImageLayouts(){
         for (ReceiptImage.ReceiptImageData data :
                 m_receiptImageHelper.getImageDataArr()) {
 
-            LinearLayout my_root = (LinearLayout) findViewById(R.id.rcptImgContainerLayout);
-
-            LinearLayout layout = new LinearLayout(this);
-            layout.setPadding(10,10,10,10);
-            layout.setOrientation(LinearLayout.HORIZONTAL);
-
-            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
-            layout.setLayoutParams(layoutParams);
-
-            ImageButton delButton = new ImageButton(this);
-            delButton.setImageResource(android.R.drawable.ic_delete);
-            delButton.setBackgroundColor(Color.WHITE);
-            LinearLayout.LayoutParams btnParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.MATCH_PARENT);
-            delButton.setLayoutParams(btnParams);
-
-            ImageView rcptImg = new ImageView(this);
-            //rcptImg.setImageResource(android.R.drawable.ic_delete);
-            rcptImg.setImageBitmap(data.getImage());
-            LinearLayout.LayoutParams imgParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 500);
-            rcptImg.setLayoutParams(imgParams);
-            rcptImg.setScaleType(ImageView.ScaleType.FIT_CENTER);
-
-            layout.addView(delButton);
-            layout.addView(rcptImg);
-
-            my_root.addView(layout);
-
-            /*
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:id="@+id/deleteButton1"
-                android:layout_marginTop="0dp"
-                android:layout_centerHorizontal="true"
-                android:background="@android:color/white"
-                android:onClick="onCameraClick"
-                android:src="@android:drawable/ic_delete"/>
-
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="300dp"
-                android:id="@+id/imageViewRcptImg1"
-                android:layout_centerVertical="true"
-                android:layout_centerHorizontal="true"
-                android:scaleType="fitCenter"
-                android:src="@drawable/r5_1" />
-
-             */
-
+            addImageData(data);
         }
 
     }
-/*
-    private void addImageListView(){
-        m_imageAdapter = new ReceiptImageAdapter(this,R.layout.receipt_image_row_item,m_receiptImageHelper.getImageDataArr());
-        ListView listView = (ListView)findViewById(R.id.rcpt_images_list);
-        listView.setAdapter(m_imageAdapter);
 
+    private View.OnClickListener onImageDelete = new View.OnClickListener() {
+        public void onClick(View v) {
+            // do something when the corky is clicked
+            int id = v.getId();
+            m_deleteImgAtIndex = ReceiptActivity.this.m_btnIdImgIndexMap.get(id);
+            new AlertDialog.Builder(ReceiptActivity.this)
+                    .setTitle("Warning")
+                    .setMessage("Are you sure you want to delete this receipt image?")
+                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            // continue with delete
+                            ReceiptActivity rAct = ReceiptActivity.this;
+                            int index = rAct.m_deleteImgAtIndex;
+                            ReceiptImage.ReceiptImageData data = rAct.m_receiptImageHelper.dataForId(index);
+                            rAct.m_deletedImageArr.add("" + data.getId());
+                            rAct.m_receiptImageHelper.deleteImageAt(data);
 
-        final SwipeToDismissTouchListener<ListViewAdapter> touchListener =
-                new SwipeToDismissTouchListener<>(
-                        new ListViewAdapter(listView),
-                        new SwipeToDismissTouchListener.DismissCallbacks<ListViewAdapter>() {
-                            @Override
-                            public boolean canDismiss(int position) {
-                                return true;
+                            int btnId = -1;
+                            for (Map.Entry<Integer, Integer> entry : rAct.m_btnIdImgIndexMap.entrySet()) {
+                                if (entry.getValue() == rAct.m_deleteImgAtIndex) {
+                                    btnId = entry.getKey();
+                                    break;
+                                }
+                            }
+                            if (btnId != -1){
+                                ImageButton button = (ImageButton) findViewById(btnId);
+                                LinearLayout layout = (LinearLayout) button.getParent();
+                                layout.setVisibility(View.GONE);
                             }
 
-                            @Override
-                            public void onDismiss(ListViewAdapter view, int position) {
-                                m_imageAdapter.remove(m_receiptImageHelper.getImageDataArr().get(position));
-                            }
-                        });
-        listView.setOnTouchListener(touchListener);
-        listView.setOnScrollListener((AbsListView.OnScrollListener) touchListener.makeScrollListener());
 
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position,
-                                    long id) {
+                            rAct.m_deleteImgAtIndex = -1;
 
-                if (touchListener.existPendingDismisses()) {
-                    touchListener.undoPendingDismiss();
-                    return;
-                }
+                            // remove the linearlayout which is parent of this.
 
 
-                String absPath = ReceiptActivity.this.m_receiptImageHelper.getImageDataArr().get(position).getAbsPath();
-                Intent myIntent = new Intent(ReceiptActivity.this, ReceiptImageActivity.class);
-                myIntent.putExtra("ABS_PATH",absPath);
-                startActivity(myIntent);
-            }
-        });
-    }
-*/
+                        }
+                    })
+                    .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            // do nothing
+                            ReceiptActivity.this.m_deleteImgAtIndex = -1;
+                        }
+                    })
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .show();
+
+
+        }
+    };
+
+    private View.OnClickListener onImageClick = new View.OnClickListener() {
+        public void onClick(View v) {
+            int id = v.getId();
+            int img_id = ReceiptActivity.this.m_imgViewIdImgIndexMap.get(id);
+            ReceiptImage.ReceiptImageData data = ReceiptActivity.this.m_receiptImageHelper.dataForId(img_id);
+            String absPath = data.getAbsPath();
+            Intent myIntent = new Intent(ReceiptActivity.this, ReceiptImageActivity.class);
+            myIntent.putExtra("ABS_PATH", absPath);
+            startActivity(myIntent);
+        }
+    };
+
     private void setupDefData(){
         int currencyIndex;
         int expenseTypeIndex;
@@ -446,37 +461,69 @@ public class ReceiptActivity extends AppCompatActivity{
 
     }
 
+    final int REQUEST_FROM_CAMERA=1;
+    private File getTempFile()
+    {
+        //it will return /sdcard/image.tmp
+        return new File(Environment.getExternalStorageDirectory(),  "image.tmp");
+    }
 
-    static final int REQUEST_IMAGE_CAPTURE = 1;
+    private void dispatchTakePictureIntent()
+    {
+        //Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        //intent.putExtra(MediaStore.EXTRA_OUTPUT,Uri.fromFile(getTempFile()));
+        //startActivityForResult(intent, REQUEST_FROM_CAMERA);
 
-    private void dispatchTakePictureIntent() {
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+            File photoFile = getTempFile();
+            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
+                    Uri.fromFile(photoFile));
+
+            startActivityForResult(takePictureIntent, REQUEST_FROM_CAMERA);
         }
+
     }
 
-    @Override
+
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            Bundle extras = data.getExtras();
+        if (requestCode == REQUEST_FROM_CAMERA && resultCode == RESULT_OK) {
+            InputStream is=null;
 
-            // TODO: after taking a picture - save it in the temp directory and use it's bmp in the ReceiptActivity
-            String absPath = ReceiptActivity.this.m_receiptImageHelper.getImageDataArr().get(0).getAbsPath();
-            Bitmap imageBitmap = BitmapFactory.decodeFile(absPath);
-            m_receiptImageHelper.addNewImage(imageBitmap, absPath);
-            m_imageAdapter.notifyDataSetChanged();
+            File file=getTempFile();
+            try {
+                is=new FileInputStream(file);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
 
-            /*
-            Bitmap imageBitmap = (Bitmap) extras.get("data");
+            //On HTC Hero the requested file will not be created. Because HTC Hero has custom camera
+            //app implementation and it works another way. It doesn't write to a file but instead
+            //it writes to media gallery and returns uri in intent. More info can be found here:
+            //http://stackoverflow.com/questions/1910608/android-actionimagecapture-intent
+            //http://code.google.com/p/android/issues/detail?id=1480
+            //So here's the workaround:
+            if(is==null){
+                try {
+                    Uri u = data.getData();
+                    is=getContentResolver().openInputStream(u);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
 
-            Intent myIntent = new Intent(this, ReceiptImageActivity.class);
-            myIntent.putExtra("data",imageBitmap);
-            startActivity(myIntent);
-            */
+            //long len = file.length();
+            ReceiptImage.ReceiptImageData imgData = m_receiptImageHelper.addNewImage(file);
+            addImageData(imgData);
+
+
+            //Now "is" stream contains the required photo, you can process it
+            //DoSomeProcessing(is);
+
+            //don't forget to remove the temp file when it's not required.
         }
-    }
 
+    }
 
 /*
     protected static final int REQUEST_PICK_IMAGE = 1;

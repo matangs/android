@@ -90,10 +90,38 @@ public class ReceiptImage {
         m_nextId++;
     }
 
-    public boolean deleteImageAt(Receipt theReceipt, Context ctxt, int index) {
-        m_imageDataArr.remove(index);
-        File imgFile = theReceipt.imageFile(index + "", ctxt);
-        return imgFile.exists() && imgFile.delete();
+    public ReceiptImageData addNewImage(File photoFile){
+        ReceiptImageData data = new ReceiptImageData();
+        data.m_id = m_nextId;
+        m_nextId++;
+        data.m_isNew = true;
+        data.m_absPath = photoFile.getAbsolutePath();
+
+        data.m_image = BitmapFactory.decodeFile(photoFile.getAbsolutePath());
+        m_imageDataArr.add(data);
+
+        return data;
+    }
+
+    public ReceiptImageData dataForId(int id){
+        for (ReceiptImageData data :
+                m_imageDataArr) {
+            if (data.getId() == id)
+                return data;
+        }
+
+        return null;
+    }
+
+    public boolean deleteImageAt(ReceiptImageData data){
+        return m_imageDataArr.remove(data);
+    }
+
+    public boolean deleteImageAt(/*Receipt theReceipt, Context ctxt, */int index) {
+        ReceiptImageData data = m_imageDataArr.remove(index);
+        return data != null;
+        //File imgFile = theReceipt.imageFile(data.m_id + "", ctxt);
+        //return imgFile.exists() && imgFile.delete();
     }
 
     public String getPhotoStr(){
