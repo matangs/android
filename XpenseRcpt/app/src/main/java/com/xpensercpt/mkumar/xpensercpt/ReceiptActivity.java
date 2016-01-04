@@ -290,6 +290,14 @@ public class ReceiptActivity extends AppCompatActivity{
             currencyIndex = preferences.getInt("ReceiptCurrency",0);
             expenseTypeIndex = preferences.getInt("ExpenseType",0);
             rcptDate = preferences.getString("DefaultReceiptDate", "");
+            if (rcptDate.length() < 1) {
+                Date date = new Date();
+                //SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
+                //Date date = fmt.parse(dateString);
+
+                SimpleDateFormat fmtOut = new SimpleDateFormat("MM-dd-yyyy");
+                rcptDate = fmtOut.format(date);
+            }
         } else{
 
             expenseTypeIndex = m_expenseType.indexOf(m_rcpt.getExpenseType());
@@ -355,10 +363,14 @@ public class ReceiptActivity extends AppCompatActivity{
 
     private void saveReceipt(){
         updateReceipt();
+        m_rcptDataSource.open();
+
         if (m_isUpdating)
             m_rcptDataSource.updateReceipt(m_rcpt);
         else
             m_rcptDataSource.insertReceipt(m_rcpt);
+
+        m_rcptDataSource.close();
 
         saveImagesToAppFolder();
 
@@ -386,11 +398,7 @@ public class ReceiptActivity extends AppCompatActivity{
                 Assert.assertEquals(deleted, true);
             }
 
-            // TODO: save image file on the disk at this point.
-            //NSData *imageData = UIImageJPEGRepresentation(data.m_image, 0.3);
-            //[imageData writeToFile:destinationPath atomically:true];
-
-
+            m_receiptImageHelper.saveData(data,m_rcpt, this.getApplicationContext());
         }
     }
 
@@ -512,20 +520,29 @@ public class ReceiptActivity extends AppCompatActivity{
                 }
             }
             try{
-                int len = is.available();
-                byte[] b = new byte[len];
-                is.read(b);
-                Bitmap bmp = BitmapFactory.decodeByteArray(b, 0, len);
-                ReceiptImage.ReceiptImageData imgData = m_receiptImageHelper.addNewImage(bmp);
-                addImageData(imgData);
+                if (is != null) {
+                    int len = is.available();
+                    byte[] b = new byte[len];
+                    int readLen = is.read(b);
+                    Assert.assertEquals(len == readLen, true);
+                    Bitmap bmp = BitmapFactory.decodeByteArray(b, 0, len);
+
+                    File finalFile = m_rcpt.imageFile(m_receiptImageHelper.getNextId() + "", this.getApplicationContext());
+                    ReceiptImage.ReceiptImageData imgData = m_receiptImageHelper.addNewImage(bmp, finalFile.getAbsolutePath());
+                    addImageData(imgData);
+                }
 
             }
             catch (IOException ex){
                 ex.printStackTrace();
             }
 
-            if (file.exists())
-                file.delete();
+            if (file.exists()) {
+                boolean deleted = file.delete();
+                Assert.assertEquals(deleted, true);
+            }
+
+            saveReceipt();
 
 
 /*

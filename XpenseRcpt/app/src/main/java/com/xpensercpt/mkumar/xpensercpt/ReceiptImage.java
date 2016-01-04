@@ -4,7 +4,11 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
+import junit.framework.Assert;
+
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -79,23 +83,12 @@ public class ReceiptImage {
 
     }
 
-    public void addNewImage(Bitmap image, String absPath){
+    public ReceiptImageData addNewImage(Bitmap bmp, String absPath){
         ReceiptImageData data = new ReceiptImageData();
-
-        data.m_image = image;
-        data.m_isNew = true;
         data.m_id = m_nextId;
+        m_nextId++;
+        data.m_isNew = true;
         data.m_absPath = absPath;
-        m_imageDataArr.add(data);
-        m_nextId++;
-    }
-
-    public ReceiptImageData addNewImage(Bitmap bmp){
-        ReceiptImageData data = new ReceiptImageData();
-        data.m_id = m_nextId;
-        m_nextId++;
-        data.m_isNew = true;
-        //data.m_absPath = photoFile.getAbsolutePath();
 
         data.m_image = bmp;
         //int width = (int) (data.m_image.getWidth() * 0.25);
@@ -124,6 +117,7 @@ public class ReceiptImage {
         return data;
     }
 
+
     public ReceiptImageData dataForId(int id){
         for (ReceiptImageData data :
                 m_imageDataArr) {
@@ -134,16 +128,41 @@ public class ReceiptImage {
         return null;
     }
 
+    public boolean saveData(ReceiptImageData data, Receipt theReceipt, Context ctxt){
+        File imgFile = theReceipt.imageFile(data.getId() + "", ctxt);
+        if (imgFile.exists()) {
+            boolean deleted = imgFile.delete();
+            Assert.assertEquals(deleted, true);
+        }
+
+        imgFile = theReceipt.imageFile(data.getId() + "", ctxt);
+        FileOutputStream out = null;
+        try {
+            out = new FileOutputStream(imgFile);
+            data.m_image.compress(Bitmap.CompressFormat.JPEG, 60, out); // bmp is your Bitmap instance
+            // PNG is a lossless format, the compression factor (100) is ignored
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            try {
+                if (out != null) {
+                    out.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+
+            }
+        }
+
+        return true;
+
+    }
+
     public boolean deleteImageAt(ReceiptImageData data){
         return m_imageDataArr.remove(data);
     }
 
-    public boolean deleteImageAt(/*Receipt theReceipt, Context ctxt, */int index) {
-        ReceiptImageData data = m_imageDataArr.remove(index);
-        return data != null;
-        //File imgFile = theReceipt.imageFile(data.m_id + "", ctxt);
-        //return imgFile.exists() && imgFile.delete();
-    }
 
     public String getPhotoStr(){
 
