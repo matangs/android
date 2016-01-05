@@ -247,6 +247,8 @@ public class ReceiptActivity extends AppCompatActivity{
 
 
                             rAct.m_deleteImgAtIndex = -1;
+                            rAct.saveReceipt();
+
 
                             // remove the linearlayout which is parent of this.
 
@@ -355,6 +357,7 @@ public class ReceiptActivity extends AppCompatActivity{
 
 
                 saveReceipt();
+                ReceiptActivity.this.finish();
                 //[[self navigationController] popViewControllerAnimated:YES];
 
             }
@@ -374,7 +377,7 @@ public class ReceiptActivity extends AppCompatActivity{
 
         saveImagesToAppFolder();
 
-        finish();
+        //finish();
     }
 
     private void saveImagesToAppFolder(){
@@ -387,6 +390,7 @@ public class ReceiptActivity extends AppCompatActivity{
                 Assert.assertEquals(deleted, true);
             }
         }
+        m_deletedImageArr.clear();
 
         for (ReceiptImage.ReceiptImageData data :
                 m_receiptImageHelper.getImageDataArr()) {

@@ -155,6 +155,8 @@ public class ReceiptImage {
             }
         }
 
+        data.m_isNew = false;
+
         return true;
 
     }
