@@ -56,10 +56,10 @@ public class ReceiptImage {
         return m_nextId;
     }
 
-    public void load(String photoStr, Receipt theReceipt, Context ctxt) {
+    public void load(Receipt theReceipt, Context ctxt) {
         m_imageDataArr.clear();
 
-        String[] arr = photoStr.split(",");
+        String[] arr = theReceipt.getphoto().split(",");
 
         for (String indexStr :
                 arr) {

@@ -13,6 +13,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
+import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.pdf.PdfDocument;
 import android.net.Uri;
@@ -455,7 +458,7 @@ public class ReceiptActivity extends AppCompatActivity{
             m_origRcpt = new Receipt();
             m_origRcpt.transferData(m_rcpt);
             m_isUpdating = true;
-            m_receiptImageHelper.load(m_rcpt.getphoto(), m_rcpt, this.getApplicationContext());
+            m_receiptImageHelper.load(m_rcpt, this.getApplicationContext());
         }
         else
             m_isUpdating = false;
@@ -482,6 +485,10 @@ public class ReceiptActivity extends AppCompatActivity{
 
     private void dispatchTakePictureIntent()
     {
+        printPDF(m_tripId);
+        return;
+
+        /*
         //Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         //intent.putExtra(MediaStore.EXTRA_OUTPUT,Uri.fromFile(getTempFile()));
         //startActivityForResult(intent, REQUEST_FROM_CAMERA);
@@ -494,6 +501,7 @@ public class ReceiptActivity extends AppCompatActivity{
 
             startActivityForResult(takePictureIntent, REQUEST_FROM_CAMERA);
         }
+        */
 
     }
 
@@ -530,6 +538,9 @@ public class ReceiptActivity extends AppCompatActivity{
                     int readLen = is.read(b);
                     Assert.assertEquals(len == readLen, true);
                     Bitmap bmp = BitmapFactory.decodeByteArray(b, 0, len);
+
+                    if (m_rcpt == null)
+                        updateReceipt();
 
                     File finalFile = m_rcpt.imageFile(m_receiptImageHelper.getNextId() + "", this.getApplicationContext());
                     ReceiptImage.ReceiptImageData imgData = m_receiptImageHelper.addNewImage(bmp, finalFile.getAbsolutePath());
@@ -741,7 +752,13 @@ try {
 
     private Intent mShareIntent;
     private OutputStream os;
-    public void printPDF() {
+    public void printPDF(long tripid) {
+
+        m_rcptDataSource.open();
+        ArrayList<Receipt> rcpts = m_rcptDataSource.getAllReceipts((int)tripid);
+        m_rcptDataSource.close();
+        if (rcpts.isEmpty())
+            return;
 
         // Create a shiny new (but blank) PDF document in memory
         // We want it to optionally be printable, so add PrintAttributes
@@ -749,58 +766,117 @@ try {
         PrintAttributes printAttrs = new PrintAttributes.Builder().
                 setColorMode(PrintAttributes.COLOR_MODE_MONOCHROME).//.COLOR_MODE_COLOR).
                 setMediaSize(PrintAttributes.MediaSize.NA_LETTER).
-                setResolution(new PrintAttributes.Resolution("zooey", PRINT_SERVICE, 300, 300)).
+                setResolution(new PrintAttributes.Resolution("zooey", PRINT_SERVICE, 100, 100)).
                 setMinMargins(PrintAttributes.Margins.NO_MARGINS).
                 build();
         PdfDocument document = new PrintedPdfDocument(this, printAttrs);
 
-        // crate a page description
-        PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(300, 300, 1).create();
+        int pageIndex = 1;
+        for (Receipt rcpt :
+                rcpts) {
+            ReceiptImage rcptImg = new ReceiptImage();
+            rcptImg.load(rcpt,this);
+            ArrayList<ReceiptImage.ReceiptImageData> dataArr = rcptImg.getImageDataArr();
 
-        // create a new page from the PageInfo
-        PdfDocument.Page page = document.startPage(pageInfo);
+            String message = null;
+            if (rcpt.getComment() != null && rcpt.getComment().length() > 0) {
+                message = rcpt.getDate() + " - " + rcpt.getExpenseType()  + " - " + rcpt.getCurrency() + " - " + rcpt.getAmount() + ", Comments - " + rcpt.getComment();
+            }
+            else {
+                message = rcpt.getDate() + " - " + rcpt.getExpenseType()  + " - " + rcpt.getCurrency() + " - " + rcpt.getAmount();
+            }
 
-        // repaint the user's text into the page
-        //View content = findViewById(R.id.textArea);
-        //content.draw(page.getCanvas());
+            for (ReceiptImage.ReceiptImageData data :
+                    dataArr) {
+                // create a new page from the PageInfo
+                // crate a page description
+                PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(612, 792, pageIndex).create();
+                pageIndex++;
 
-        File imgFile = new File(this.getApplicationContext().getDir("1",0), "2_1.jpg");
-        if(imgFile.exists()){
-            String str = imgFile.getAbsolutePath();
+                PdfDocument.Page page = document.startPage(pageInfo);
 
-            Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-            Canvas canvas = page.getCanvas();
-            canvas.drawBitmap(myBitmap,null,new Rect(10,10,300,300), null);
+                // repaint the user's text into the page
+                //View content = findViewById(R.id.textArea);
+                //content.draw(page.getCanvas());
+                Bitmap myBitmap = data.getImage();
+
+
+                int width = myBitmap.getWidth();
+                int height = myBitmap.getHeight();
+                Canvas canvas = page.getCanvas();
+                Bitmap newbmp = Bitmap.createScaledBitmap(myBitmap, (int) (width * 0.45), (int) (height * 0.45), false);
+
+                ColorMatrix ma = new ColorMatrix();
+                ma.setSaturation(0);
+                Paint paint = new Paint();
+                paint.setColorFilter(new ColorMatrixColorFilter(ma));
+
+
+                if (width > height)
+                {
+                    int newHt = (int)(300.0*height/width);
+                    canvas.drawBitmap(newbmp, null, new Rect(100, 100, 400, 100+newHt), paint);
+                    canvas.drawText(message, 100, newHt + 50, paint);
+                }
+                else if (width < height)
+                {
+                    int newwidth = (int)(300.0*width/height);
+                    canvas.drawBitmap(newbmp, null, new Rect(100, 100, 100+newwidth, 400), paint);
+                    canvas.drawText(message, 100, 450, paint);
+                }
+                else
+                {
+                    canvas.drawBitmap(newbmp, null, new Rect(100, 100, 400, 400), paint);
+                    canvas.drawText(message, 100, 450, paint);
+                }
+                document.finishPage(page);
+
+            }
         }
 
 
-        // do final processing of the page
-        document.finishPage(page);
-
-        // Here you could add more pages in a longer doc app, but you'd have
-        // to handle page-breaking yourself in e.g., write your own word processor...
-
-        // Now write the PDF document to a file; it actually needs to be a file
-        // since the Share mechanism can't accept a byte[]. though it can
-        // accept a String/CharSequence. Meh.
         try {
+
+            /*
+            File tempPDF =  new File(Environment.getExternalStorageDirectory(),  "temp.pdf");
+            Uri contentUri = Uri.fromFile(tempPDF);
+            os = new FileOutputStream(tempPDF);
+            document.writeTo(os);
+            document.close();
+            os.close();
+
+            //shareDocument(contentUri);
+            */
+
+
             File pdfDirPath = new File(getFilesDir(), "pdfs");
-            if (pdfDirPath.mkdirs()) {
+            if (pdfDirPath.exists() || pdfDirPath.mkdirs()) {
                 File file = new File(pdfDirPath, "pdfsend.pdf");
-                Uri contentUri = FileProvider.getUriForFile(this, "com.xpensercpt.fileprovider", file);
+                String absPath = file.getAbsolutePath();
+                //Uri contentUri = Uri.fromFile(file);
+                //Uri contentUri = FileProvider.getUriForFile(this, "com.xpensercpt.fileprovider", file);
                 os = new FileOutputStream(file);
                 document.writeTo(os);
                 document.close();
                 os.close();
-
-                shareDocument(contentUri);
+                viewPdf(absPath);
+                //shareDocument(contentUri);
             }
+
         } catch (IOException e) {
             throw new RuntimeException("Error generating file", e);
         }
     }
 
+    private void viewPdf(String absPath){
+        Intent myIntent = new Intent(ReceiptActivity.this, PDFViewActivity.class);
+        myIntent.putExtra("ABS_PATH", absPath);
+        startActivity(myIntent);
+    }
+
     private void shareDocument(Uri uri) {
+
+
         mShareIntent = new Intent();
         mShareIntent.setAction(Intent.ACTION_SEND);
         mShareIntent.setType("application/pdf");
