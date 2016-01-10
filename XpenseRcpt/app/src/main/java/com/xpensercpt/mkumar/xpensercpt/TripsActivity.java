@@ -2,13 +2,25 @@ package com.xpensercpt.mkumar.xpensercpt;
 
 import android.annotation.TargetApi;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
+import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.pdf.PdfDocument;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.print.PrintAttributes;
+import android.print.pdf.PrintedPdfDocument;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,6 +34,10 @@ import android.widget.ListView;
 import com.xpensercpt.mkumar.xpensercpt.swipe.SwipeToDismissTouchListener;
 import com.xpensercpt.mkumar.xpensercpt.swipe.adapter.ListViewAdapter;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 
 public class TripsActivity extends AppCompatActivity {
@@ -37,12 +53,12 @@ public class TripsActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                TripsActivity.this.printPDF(TripsActivity.this.m_trip.getPrimaryKey());
             }
         });
 
@@ -126,7 +142,7 @@ public class TripsActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent myIntent = new Intent(TripsActivity.this, ReceiptActivity.class);
                 myIntent.putExtra("ReceiptID", -1);
-                myIntent.putExtra("TripID",m_trip.getPrimaryKey());
+                myIntent.putExtra("TripID", m_trip.getPrimaryKey());
                 TripsActivity.this.startActivity(myIntent);
             }
         });
@@ -170,5 +186,129 @@ public class TripsActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+    public void printPDF(long tripid) {
+
+        m_rcptDataSource.open();
+        ArrayList<Receipt> rcpts = m_rcptDataSource.getAllReceipts((int)tripid);
+        m_rcptDataSource.close();
+        if (rcpts.isEmpty())
+            return;
+
+        // Create a shiny new (but blank) PDF document in memory
+        // We want it to optionally be printable, so add PrintAttributes
+        // and use a PrintedPdfDocument. Simpler: new PdfDocument().
+        PrintAttributes printAttrs = new PrintAttributes.Builder().
+                setColorMode(PrintAttributes.COLOR_MODE_MONOCHROME).//.COLOR_MODE_COLOR).
+                setMediaSize(PrintAttributes.MediaSize.NA_LETTER).
+                setResolution(new PrintAttributes.Resolution("zooey", PRINT_SERVICE, 100, 100)).
+                setMinMargins(PrintAttributes.Margins.NO_MARGINS).
+                build();
+        PdfDocument document = new PrintedPdfDocument(this, printAttrs);
+
+        int pageIndex = 1;
+        for (Receipt rcpt :
+                rcpts) {
+            ReceiptImage rcptImg = new ReceiptImage();
+            rcptImg.load(rcpt,this);
+            ArrayList<ReceiptImage.ReceiptImageData> dataArr = rcptImg.getImageDataArr();
+
+            String message;
+            if (rcpt.getComment() != null && rcpt.getComment().length() > 0) {
+                message = rcpt.getDate() + " - " + rcpt.getExpenseType()  + " - " + rcpt.getCurrency() + " - " + rcpt.getAmount() + ", Comments - " + rcpt.getComment();
+            }
+            else {
+                message = rcpt.getDate() + " - " + rcpt.getExpenseType()  + " - " + rcpt.getCurrency() + " - " + rcpt.getAmount();
+            }
+
+            for (ReceiptImage.ReceiptImageData data :
+                    dataArr) {
+                // create a new page from the PageInfo
+                // crate a page description
+                PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(612, 792, pageIndex).create();
+                pageIndex++;
+
+                PdfDocument.Page page = document.startPage(pageInfo);
+                Bitmap myBitmap = data.getImage();
+
+                int width = myBitmap.getWidth();
+                int height = myBitmap.getHeight();
+                Canvas canvas = page.getCanvas();
+                Bitmap newbmp = Bitmap.createScaledBitmap(myBitmap, (int) (width * 0.45), (int) (height * 0.45), false);
+
+                ColorMatrix ma = new ColorMatrix();
+                ma.setSaturation(0);
+                Paint paint = new Paint();
+                paint.setColorFilter(new ColorMatrixColorFilter(ma));
+
+
+                if (width > height)
+                {
+                    int newHt = (int)(300.0*height/width);
+                    canvas.drawBitmap(newbmp, null, new Rect(100, 100, 400, 100+newHt), paint);
+                    canvas.drawText(message, 100, newHt + 50, paint);
+                }
+                else if (width < height)
+                {
+                    int newwidth = (int)(300.0*width/height);
+                    canvas.drawBitmap(newbmp, null, new Rect(100, 100, 100+newwidth, 400), paint);
+                    canvas.drawText(message, 100, 450, paint);
+                }
+                else
+                {
+                    canvas.drawBitmap(newbmp, null, new Rect(100, 100, 400, 400), paint);
+                    canvas.drawText(message, 100, 450, paint);
+                }
+                document.finishPage(page);
+
+            }
+        }
+
+
+        try {
+            File pdfDirPath = new File(getFilesDir(), "pdfs");
+            if (pdfDirPath.exists() || pdfDirPath.mkdirs()) {
+                File file = new File(pdfDirPath, "pdfsend.pdf");
+                String absPath = file.getAbsolutePath();
+                Uri contentUri = Uri.fromFile(file);
+                try {
+                    contentUri = FileProvider.getUriForFile(
+                            this,
+                            "com.xpensercpt.fileprovider",
+                            file);
+                } catch (IllegalArgumentException e) {
+                    Log.e("File Selector",
+                            "The selected file can't be shared: ");
+                }
+
+                OutputStream os = new FileOutputStream(file);
+                document.writeTo(os);
+                document.close();
+                os.close();
+                shareDocument(contentUri);
+            }
+
+        } catch (IOException e) {
+            throw new RuntimeException("Error generating file", e);
+        }
+    }
+
+    private void viewPdf(String absPath){
+        Intent myIntent = new Intent(this, PDFViewActivity.class);
+        myIntent.putExtra("ABS_PATH", absPath);
+        startActivity(myIntent);
+    }
+
+    private void shareDocument(Uri uri) {
+
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/xml");
+        intent.putExtra(Intent.EXTRA_EMAIL, new String[] {"email@example.com"});
+        intent.putExtra(Intent.EXTRA_SUBJECT, "subject here");
+        intent.putExtra(Intent.EXTRA_TEXT, "body text");
+        intent.putExtra(Intent.EXTRA_STREAM, uri);
+        startActivity(Intent.createChooser(intent, "Send email..."));
+    }
+
 
 }

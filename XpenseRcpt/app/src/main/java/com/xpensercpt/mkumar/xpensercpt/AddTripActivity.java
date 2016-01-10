@@ -27,6 +27,7 @@ public class AddTripActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         onDoneClick();
 
+        /*
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -35,6 +36,8 @@ public class AddTripActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
+        */
+
 
         setStatusBarColor();
     }
