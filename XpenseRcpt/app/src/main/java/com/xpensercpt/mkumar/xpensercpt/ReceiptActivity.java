@@ -372,7 +372,7 @@ public class ReceiptActivity extends AppCompatActivity{
                 saveReceipt();
 
                 Intent returnIntent = new Intent();
-                returnIntent.putExtra("result","OK");
+                returnIntent.putExtra("result", "OK");
                 setResult(RESULT_OK, returnIntent);
                 ReceiptActivity.this.finish();
             }
@@ -383,10 +383,14 @@ public class ReceiptActivity extends AppCompatActivity{
         updateReceipt();
         m_rcptDataSource.open();
 
+
         if (m_isUpdating)
             m_rcptDataSource.updateReceipt(m_rcpt);
-        else
-            m_rcptDataSource.insertReceipt(m_rcpt);
+        else {
+            long id = m_rcptDataSource.insertReceipt(m_rcpt);
+            if (id != -1)
+                m_rcpt.setPrimaryKey(id);
+        }
 
         m_rcptDataSource.close();
 

@@ -26,7 +26,7 @@ public class Receipt {
     public static final String COLUMN_PHOTO = "photo";
     public static final String COLUMN_COMMENT = "comment";
 
-    private long m_primaryKey; //id
+    private long m_primaryKey = -1; //id
     private long m_tripKey; //trip_id
 
     private float  m_amount; //amount

@@ -14,7 +14,7 @@ public class Trip {
     public static final String COLUMN_NAME = "name";
     public static final String COLUMN_DATE = "date";
 
-    private long m_primaryKey; //id
+    private long m_primaryKey = -1; //id
     private String m_name; //name
     private String m_date; //date
 
