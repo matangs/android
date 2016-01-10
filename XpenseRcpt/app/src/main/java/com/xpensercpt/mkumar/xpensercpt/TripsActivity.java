@@ -121,7 +121,15 @@ public class TripsActivity extends AppCompatActivity {
 
                             @Override
                             public void onDismiss(ListViewAdapter view, int position) {
+                                Receipt rcpt = m_trip.getReceipts().get(position);
+
                                 m_rcptAdapter.remove(m_trip.getReceipts().get(position));
+
+                                m_trip.getReceipts().remove(rcpt);
+                                TripsActivity.this.m_rcptDataSource.open();
+                                TripsActivity.this.m_rcptDataSource.deleteReceipt(rcpt);
+                                TripsActivity.this.m_rcptDataSource.close();
+
                             }
                         });
         listView.setOnTouchListener(touchListener);

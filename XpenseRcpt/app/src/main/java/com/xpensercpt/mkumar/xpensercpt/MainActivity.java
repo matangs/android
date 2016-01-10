@@ -91,7 +91,13 @@ public class MainActivity extends AppCompatActivity {
 
                             @Override
                             public void onDismiss(ListViewAdapter view, int position) {
-                                m_adapter.remove(m_trips.get(position));
+                                Trip trip = m_trips.get(position);
+                                m_adapter.remove(trip);
+
+                                m_tripDataSource.open();
+                                m_tripDataSource.deleteTrip(trip);
+                                m_tripDataSource.close();
+
                             }
                         });
         listView.setOnTouchListener(touchListener);
