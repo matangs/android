@@ -20,6 +20,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Html;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -195,6 +196,8 @@ public class TripsActivity extends AppCompatActivity {
         if (rcpts.isEmpty())
             return;
 
+        String msg = emailMsg(rcpts);
+
         // Create a shiny new (but blank) PDF document in memory
         // We want it to optionally be printable, so add PrintAttributes
         // and use a PrintedPdfDocument. Simpler: new PdfDocument().
@@ -285,7 +288,7 @@ public class TripsActivity extends AppCompatActivity {
                 document.writeTo(os);
                 document.close();
                 os.close();
-                shareDocument(contentUri);
+                shareDocument(contentUri, msg);
             }
 
         } catch (IOException e) {
@@ -299,13 +302,35 @@ public class TripsActivity extends AppCompatActivity {
         startActivity(myIntent);
     }
 
-    private void shareDocument(Uri uri) {
+    private String emailMsg(ArrayList<Receipt> rcpts){
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("Hello there,<br /><br />The PDF containing all reciept images are attached for your filing purposes. Hope you enjoyed the ease of use of XpenseRcpt. Please find your expenses in a tabular format below.<br /><br />");
+        builder.append("Amount - Currency - Date - Expense Type  (comment)<br />");
+        for (Receipt rcpt :
+                rcpts) {
+            String comment = "";
+            if (rcpt.getComment() != null)
+                comment = " (" + rcpt.getComment() + ")";
+            String str = rcpt.getAmount() + " - "+ rcpt.getCurrency() + " - " + rcpt.getDate() + " - " + rcpt.getExpenseType() + "  " + comment + "<br />";
+            builder.append(str);
+        }
+        builder.append("<br/>Sent using XpenseRcpt for Android.</p>");
+
+        return builder.toString();
+
+    }
+
+
+    private void shareDocument(Uri uri, String msg) {
 
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("text/xml");
-        intent.putExtra(Intent.EXTRA_EMAIL, new String[] {"email@example.com"});
-        intent.putExtra(Intent.EXTRA_SUBJECT, "subject here");
-        intent.putExtra(Intent.EXTRA_TEXT, "body text");
+        intent.putExtra(Intent.EXTRA_EMAIL, new String[]{""});
+        intent.putExtra(Intent.EXTRA_SUBJECT, m_tripName + " - Trip summary");
+
+        //intent.putExtra(Intent.EXTRA_TEXT, msg);
+        intent.putExtra(Intent.EXTRA_TEXT,Html.fromHtml(msg));
         intent.putExtra(Intent.EXTRA_STREAM, uri);
         startActivity(Intent.createChooser(intent, "Send email..."));
     }
