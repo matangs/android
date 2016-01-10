@@ -34,6 +34,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDialogFragment;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -486,7 +487,6 @@ public class ReceiptActivity extends AppCompatActivity{
     private void dispatchTakePictureIntent()
     {
         printPDF(m_tripId);
-        return;
 
         /*
         //Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -778,7 +778,7 @@ try {
             rcptImg.load(rcpt,this);
             ArrayList<ReceiptImage.ReceiptImageData> dataArr = rcptImg.getImageDataArr();
 
-            String message = null;
+            String message;
             if (rcpt.getComment() != null && rcpt.getComment().length() > 0) {
                 message = rcpt.getDate() + " - " + rcpt.getExpenseType()  + " - " + rcpt.getCurrency() + " - " + rcpt.getAmount() + ", Comments - " + rcpt.getComment();
             }
@@ -853,14 +853,27 @@ try {
             if (pdfDirPath.exists() || pdfDirPath.mkdirs()) {
                 File file = new File(pdfDirPath, "pdfsend.pdf");
                 String absPath = file.getAbsolutePath();
-                //Uri contentUri = Uri.fromFile(file);
+                Uri contentUri = Uri.fromFile(file);
+                try {
+                    contentUri = FileProvider.getUriForFile(
+                            this,
+                            "com.xpensercpt.fileprovider",
+                            file);
+                } catch (IllegalArgumentException e) {
+                    Log.e("File Selector",
+                            "The selected file can't be shared: ");
+                }
+
                 //Uri contentUri = FileProvider.getUriForFile(this, "com.xpensercpt.fileprovider", file);
                 os = new FileOutputStream(file);
                 document.writeTo(os);
                 document.close();
                 os.close();
-                viewPdf(absPath);
-                //shareDocument(contentUri);
+                //viewPdf(absPath);
+
+
+
+                shareDocument(contentUri);
             }
 
         } catch (IOException e) {
@@ -876,7 +889,15 @@ try {
 
     private void shareDocument(Uri uri) {
 
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/xml");
+        intent.putExtra(Intent.EXTRA_EMAIL, new String[] {"email@example.com"});
+        intent.putExtra(Intent.EXTRA_SUBJECT, "subject here");
+        intent.putExtra(Intent.EXTRA_TEXT, "body text");
+        intent.putExtra(Intent.EXTRA_STREAM, uri);
+        startActivity(Intent.createChooser(intent, "Send email..."));
 
+        /*
         mShareIntent = new Intent();
         mShareIntent.setAction(Intent.ACTION_SEND);
         mShareIntent.setType("application/pdf");
@@ -885,6 +906,7 @@ try {
         // Attach the PDf as a Uri, since Android can't take it as bytes yet.
         mShareIntent.putExtra(Intent.EXTRA_STREAM, uri);
         startActivity(mShareIntent);
+        */
 
     }
 
