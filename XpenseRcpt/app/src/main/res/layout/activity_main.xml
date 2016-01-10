@@ -13,17 +13,6 @@
         <android.support.v7.widget.Toolbar android:id="@+id/toolbar"
             android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
             android:background="@color/dark_orange" app:popupTheme="@style/AppTheme.PopupOverlay" >
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="right"
-                android:id="@+id/addNewTripButton"
-                android:textSize="16dp"
-                android:background="@null"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"
-                android:textColor="#FFF"
-                android:text="New Trip"/>
 
         </android.support.v7.widget.Toolbar>
 
@@ -31,10 +20,10 @@
 
     <include layout="@layout/content_main" />
 
-    <!--android.support.design.widget.FloatingActionButton android:id="@+id/fab"
+    <android.support.design.widget.FloatingActionButton android:id="@+id/fab"
         android:layout_width="wrap_content" android:layout_height="wrap_content"
         android:layout_gravity="bottom|end" android:layout_margin="@dimen/fab_margin"
-        android:src="@android:drawable/ic_dialog_email" /-->
+        android:src="@drawable/ic_add_white_24dp" />
 
 
 </android.support.design.widget.CoordinatorLayout>

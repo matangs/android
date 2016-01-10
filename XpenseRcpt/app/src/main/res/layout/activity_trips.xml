@@ -18,13 +18,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="right"
-                android:id="@+id/addNewRcptButton"
+                android:id="@+id/tripSummaryButton"
                 android:textSize="16dp"
                 android:background="@null"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
                 android:textColor="#FFF"
-                android:text="Add Receipt"/>
+                android:text="Summary"/>
 
             </android.support.v7.widget.Toolbar>
 
@@ -36,6 +36,6 @@
     <android.support.design.widget.FloatingActionButton android:id="@+id/fab"
         android:layout_width="wrap_content" android:layout_height="wrap_content"
         android:layout_gravity="bottom|end" android:layout_margin="@dimen/fab_margin"
-        android:src="@android:drawable/ic_dialog_email" />
+        android:src="@drawable/ic_add_white_24dp" />
 
 </android.support.design.widget.CoordinatorLayout>

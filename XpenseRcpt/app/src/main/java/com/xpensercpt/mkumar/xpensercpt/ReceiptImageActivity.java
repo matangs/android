@@ -25,6 +25,8 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 
+import junit.framework.Assert;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -33,6 +35,10 @@ import java.io.OutputStream;
 
 public class ReceiptImageActivity extends AppCompatActivity {
 
+    private String m_absPath;
+    private Bitmap m_bitmap;
+    private boolean m_changed = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,16 +46,49 @@ public class ReceiptImageActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        /*
+
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        if (m_changed)
+            fab.setVisibility(View.VISIBLE);
+
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+
+                File imgFile = new File(m_absPath);// theReceipt.imageFile(data.getId() + "", ctxt);
+                if (imgFile.exists()) {
+                    boolean deleted = imgFile.delete();
+                    Assert.assertEquals(deleted, true);
+                }
+
+                imgFile = new File(m_absPath);//theReceipt.imageFile(data.getId() + "", ctxt);
+                FileOutputStream out = null;
+                try {
+                    out = new FileOutputStream(imgFile);
+                    m_bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return;
+                } finally {
+                    try {
+                        if (out != null) {
+                            out.close();
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+
+                    }
+                }
+
+                Intent returnIntent = new Intent();
+                returnIntent.putExtra("result","OK");
+                setResult(RESULT_OK, returnIntent);
+                ReceiptImageActivity.this.finish();
+
+                //Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                //        .setAction("Action", null).show();
             }
         });
-        */
 
         setStatusBarColor();
 
@@ -61,40 +100,15 @@ public class ReceiptImageActivity extends AppCompatActivity {
         Bitmap imageBitmap = null;
 
         if (getIntent().hasExtra("ABS_PATH")){
-            String path = getIntent().getStringExtra("ABS_PATH");
-            imageBitmap = BitmapFactory.decodeFile(path);
+            m_absPath = getIntent().getStringExtra("ABS_PATH");
+            m_bitmap = BitmapFactory.decodeFile(m_absPath);
         }
 
-        if (imageBitmap == null && getIntent().hasExtra("data"))
-            imageBitmap = (Bitmap) extras.get("data");
-        else if (getIntent().hasExtra("Image"))
-            imageBitmap = (Bitmap) extras.get("Image");
 
-        if (imageBitmap == null){
-            if(getIntent().hasExtra("byteArray")) {
-                imageBitmap = BitmapFactory.decodeByteArray(
-                        getIntent().getByteArrayExtra("byteArray"),0,getIntent().getByteArrayExtra("byteArray").length);
-            }
-        }
-
-        if (imageBitmap != null){
+        if (m_bitmap != null){
             ImageView rcptImage = (ImageView)findViewById(R.id.imageViewRcptDetail);
-            rcptImage.setImageBitmap(imageBitmap);
+            rcptImage.setImageBitmap(m_bitmap);
         }
-        else{
-
-            File imgFile = new File(this.getApplicationContext().getDir("1",0), "2_1.jpg");
-            if(imgFile.exists()){
-                String str = imgFile.getAbsolutePath();
-
-                Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-
-                ImageView rcptImage = (ImageView)findViewById(R.id.imageViewRcptDetail);
-                rcptImage.setImageBitmap(myBitmap);
-
-            }
-        }
-
 
     }
 
@@ -104,7 +118,13 @@ public class ReceiptImageActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 ImageView rcptImage = (ImageView)findViewById(R.id.imageViewRcptDetail);
-                rcptImage.setImageBitmap(RotateBitmap(((BitmapDrawable)rcptImage.getDrawable()).getBitmap(),90));
+                m_bitmap = RotateBitmap(m_bitmap,90);
+                rcptImage.setImageBitmap(m_bitmap);
+                //rcptImage.setImageBitmap(RotateBitmap(((BitmapDrawable)rcptImage.getDrawable()).getBitmap(),90));
+                FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+                fab.setVisibility(View.VISIBLE);
+                m_changed = true;
+
 
                 /*float angle = rcptImage.getRotation();
                 if (angle < 270)

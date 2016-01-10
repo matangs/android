@@ -59,7 +59,10 @@ public class TripsActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                TripsActivity.this.printPDF(TripsActivity.this.m_trip.getPrimaryKey());
+                Intent myIntent = new Intent(TripsActivity.this, ReceiptActivity.class);
+                myIntent.putExtra("ReceiptID", -1);
+                myIntent.putExtra("TripID", m_trip.getPrimaryKey());
+                TripsActivity.this.startActivity(myIntent);
             }
         });
 
@@ -83,6 +86,13 @@ public class TripsActivity extends AppCompatActivity {
             m_trip.getReceipts().addAll(newRcpts);
             m_rcptAdapter.notifyDataSetChanged();
         }
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+        //recreate();
     }
 
     private void addedRcptListView(){
@@ -131,20 +141,32 @@ public class TripsActivity extends AppCompatActivity {
                 Intent myIntent = new Intent(TripsActivity.this, ReceiptActivity.class);
                 myIntent.putExtra("ReceiptID", rcpt.getPrimaryKey()); //Optional parameters
                 myIntent.putExtra("TripID",rcpt.getTripKey());
-                TripsActivity.this.startActivity(myIntent);
+                TripsActivity.this.startActivityForResult(myIntent, REQUEST_FROM_RECEIPT);
             }
         });
     }
 
+    final int REQUEST_FROM_RECEIPT = 1;
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if (requestCode == REQUEST_FROM_RECEIPT) {
+
+            if(resultCode == RESULT_OK){
+                //Update List
+                recreate();
+            }
+            //if (resultCode == RESULT_CANCELED) {
+                //Do nothing?
+            //}
+        }
+    }
+
     private void onAddRcptBtnClick(){
-        Button addButton = (Button) findViewById(R.id.addNewRcptButton);
-        addButton.setOnClickListener(new View.OnClickListener() {
+        Button summaryButton = (Button) findViewById(R.id.tripSummaryButton);
+        summaryButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent myIntent = new Intent(TripsActivity.this, ReceiptActivity.class);
-                myIntent.putExtra("ReceiptID", -1);
-                myIntent.putExtra("TripID", m_trip.getPrimaryKey());
-                TripsActivity.this.startActivity(myIntent);
+                TripsActivity.this.printPDF(TripsActivity.this.m_trip.getPrimaryKey());
             }
         });
     }

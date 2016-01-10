@@ -282,9 +282,16 @@ public class ReceiptActivity extends AppCompatActivity{
             String absPath = data.getAbsPath();
             Intent myIntent = new Intent(ReceiptActivity.this, ReceiptImageActivity.class);
             myIntent.putExtra("ABS_PATH", absPath);
-            startActivity(myIntent);
+            startActivityForResult(myIntent, REQUEST_FROM_IMAGE_VIEW);
         }
     };
+
+    protected void onImageViewResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_FROM_IMAGE_VIEW && resultCode == RESULT_OK) {
+            recreate();
+        }
+    }
+
 
     private void setupDefData(){
         int currencyIndex;
@@ -363,9 +370,11 @@ public class ReceiptActivity extends AppCompatActivity{
 
 
                 saveReceipt();
-                ReceiptActivity.this.finish();
-                //[[self navigationController] popViewControllerAnimated:YES];
 
+                Intent returnIntent = new Intent();
+                returnIntent.putExtra("result","OK");
+                setResult(RESULT_OK, returnIntent);
+                ReceiptActivity.this.finish();
             }
         });
     }
@@ -480,6 +489,7 @@ public class ReceiptActivity extends AppCompatActivity{
     }
 
     final int REQUEST_FROM_CAMERA=1;
+    final int REQUEST_FROM_IMAGE_VIEW=2;
     private File getTempFile()
     {
         //it will return /sdcard/image.tmp
@@ -504,8 +514,16 @@ public class ReceiptActivity extends AppCompatActivity{
         }
     }
 
-
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_FROM_CAMERA){
+            onCameraResult(requestCode, resultCode, data);
+        }
+        else if (requestCode == REQUEST_FROM_IMAGE_VIEW){
+            onImageViewResult(requestCode, resultCode, data);
+        }
+    }
+
+    protected void onCameraResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_FROM_CAMERA && resultCode == RESULT_OK) {
             InputStream is=null;
 
