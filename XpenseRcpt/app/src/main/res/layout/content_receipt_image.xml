@@ -10,7 +10,7 @@
     tools:showIn="@layout/activity_receipt_image"
     tools:context="com.xpensercpt.mkumar.xpensercpt.ReceiptImageActivity">
 
-    <ImageView
+    <com.xpensercpt.mkumar.xpensercpt.TouchImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/imageViewRcptDetail"
