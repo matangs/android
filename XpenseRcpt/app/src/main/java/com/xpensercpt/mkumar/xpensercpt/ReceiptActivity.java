@@ -494,10 +494,18 @@ public class ReceiptActivity extends AppCompatActivity{
 
     final int REQUEST_FROM_CAMERA=1;
     final int REQUEST_FROM_IMAGE_VIEW=2;
-    private File getTempFile()
+    private File getTempFile2()
     {
         //it will return /sdcard/image.tmp
         return new File(Environment.getExternalStorageDirectory(),  "image.tmp");
+    }
+
+    private File getTempFile(){
+        File pdfDirPath = new File(getFilesDir(), "pdfs");
+        if (pdfDirPath.exists() || pdfDirPath.mkdirs()) {
+            return new File(pdfDirPath, "image.jpg");
+        }
+        return  null;
     }
 
     private void dispatchTakePictureIntent()
@@ -511,8 +519,19 @@ public class ReceiptActivity extends AppCompatActivity{
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
             File photoFile = getTempFile();
+            Uri contentUri = Uri.fromFile(photoFile);
+            try {
+                contentUri = FileProvider.getUriForFile(
+                        this,
+                        "com.xpensercpt.fileprovider",
+                        photoFile);
+            } catch (IllegalArgumentException e) {
+                Log.e("File Selector",
+                        "The selected file can't be shared: ");
+            }
+
             takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
-                    Uri.fromFile(photoFile));
+                    contentUri);
 
             startActivityForResult(takePictureIntent, REQUEST_FROM_CAMERA);
         }
@@ -532,6 +551,9 @@ public class ReceiptActivity extends AppCompatActivity{
             InputStream is=null;
 
             File file=getTempFile();
+            if (file == null)
+                return;
+
             try {
                 is=new FileInputStream(file);
             } catch (FileNotFoundException e) {
